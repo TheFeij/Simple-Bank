@@ -19,5 +19,7 @@ migrateup:
 migratedown:
 	 migrate -path ./db/migration -database "postgres://root:david1380@localhost:5432/simple_bank?sslmode=disable" -verbose down
 
+test:
+	go test -v -cover ./...
 
 .PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, migratedown, migrateup
