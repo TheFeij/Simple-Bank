@@ -2,14 +2,15 @@ package services
 
 import (
 	"Simple-Bank/requests"
+	"Simple-Bank/util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateAccount(t *testing.T) {
 	testAccount := requests.CreateAccountRequest{
-		Owner:    "Abolfazl",
-		Currency: "USD",
+		Owner:    util.RandomOwner(),
+		Currency: util.RandomCurrency(),
 	}
 
 	account, err := accountServices.CreateAccount(testAccount)
