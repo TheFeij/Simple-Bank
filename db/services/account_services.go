@@ -3,6 +3,7 @@ package services
 import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
+	"Simple-Bank/responses"
 	"gorm.io/gorm"
 )
 
@@ -133,4 +134,28 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 	}
 
 	return newTransfer, nil
+}
+
+func (accountServices *AccountServices) listAccounts(limit int) ([]responses.ListAccountsRequest, error) {
+	var accounts []models.Accounts
+
+	if err := accountServices.DB.First(&accounts).Limit(limit).Error; err != nil {
+		return []responses.ListAccountsRequest{}, err
+	}
+
+	var accountsList []responses.ListAccountsRequest
+	for _, account := range accounts {
+		response := responses.ListAccountsRequest{
+			Owner:     account.Owner,
+			Currency:  account.Currency,
+			Balance:   account.Balance,
+			AccountID: uint64(account.ID),
+			CreatedAt: account.CreatedAt,
+			UpdateAt:  account.UpdatedAt,
+		}
+
+		accountsList = append(accountsList, response)
+	}
+
+	return accountsList, nil
 }
