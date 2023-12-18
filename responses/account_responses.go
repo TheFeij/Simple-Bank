@@ -13,7 +13,11 @@ type CreateAccountResponse struct {
 }
 
 type GetAccountResponse struct {
-	CreateAccountResponse
+	AccountID uint64    `json:"accountID"`
+	CreatedAt time.Time `json:"createdAt"`
+	Owner     string    `json:"owner"`
+	Balance   uint64    `json:"balance"`
+	Currency  string    `json:"currency"`
 }
 
 type ListAccountsResponse struct {
