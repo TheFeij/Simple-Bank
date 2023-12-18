@@ -15,6 +15,7 @@ type CreateAccountResponse struct {
 type GetAccountResponse struct {
 	AccountID uint64    `json:"accountID"`
 	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 	Owner     string    `json:"owner"`
 	Balance   uint64    `json:"balance"`
 	Currency  string    `json:"currency"`
