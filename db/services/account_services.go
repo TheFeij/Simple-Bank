@@ -136,16 +136,16 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 	return newTransfer, nil
 }
 
-func (accountServices *AccountServices) listAccounts(limit int) ([]responses.ListAccountsRequest, error) {
+func (accountServices *AccountServices) listAccounts(limit int) ([]responses.ListAccountsResponse, error) {
 	var accounts []models.Accounts
 
 	if err := accountServices.DB.First(&accounts).Limit(limit).Error; err != nil {
-		return []responses.ListAccountsRequest{}, err
+		return []responses.ListAccountsResponse{}, err
 	}
 
-	var accountsList []responses.ListAccountsRequest
+	var accountsList []responses.ListAccountsResponse
 	for _, account := range accounts {
-		response := responses.ListAccountsRequest{
+		response := responses.ListAccountsResponse{
 			Owner:     account.Owner,
 			Currency:  account.Currency,
 			Balance:   account.Balance,
@@ -158,4 +158,23 @@ func (accountServices *AccountServices) listAccounts(limit int) ([]responses.Lis
 	}
 
 	return accountsList, nil
+}
+
+func (accountServices *AccountServices) getAccount(id uint64) (responses.GetAccountResponse, error) {
+	var account models.Accounts
+
+	if err := accountServices.DB.Find(&account, id).Error; err != nil {
+		return responses.GetAccountResponse{}, err
+	}
+
+	response := responses.GetAccountResponse{
+		Owner:     account.Owner,
+		Currency:  account.Currency,
+		Balance:   account.Balance,
+		AccountID: uint64(account.ID),
+		CreatedAt: account.CreatedAt,
+		UpdatedAt: account.UpdatedAt,
+	}
+
+	return response, nil
 }
