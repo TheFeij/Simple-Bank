@@ -4,6 +4,7 @@ import (
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/util"
+	"database/sql"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -45,4 +46,17 @@ func TestGetAccount(t *testing.T) {
 	require.Equal(t, account.CreatedAt, response.CreatedAt)
 	require.Equal(t, account.Owner, response.Owner)
 	//require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+}
+
+func TestDeleteAccount(t *testing.T) {
+	account := createRandomAccount(t)
+
+	response, err := accountServices.DeleteAccount(account.AccountID)
+	require.NoError(t, err)
+	require.NotEmpty(t, response)
+
+	response, err = accountServices.getAccount(account.AccountID)
+	require.Error(t, err)
+	require.Equal(t, err, sql.ErrNoRows.Error())
+	require.Empty(t, response)
 }
