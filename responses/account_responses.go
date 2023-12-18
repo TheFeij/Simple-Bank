@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type CreateAccountRequest struct {
+type CreateAccountResponse struct {
 	AccountID uint64    `json:"accountID"`
 	CreatedAt time.Time `json:"createdAt"`
 	Owner     string    `json:"owner"`
@@ -12,7 +12,11 @@ type CreateAccountRequest struct {
 	Currency  string    `json:"currency"`
 }
 
-type ListAccountsRequest struct {
+type GetAccountResponse struct {
+	CreateAccountResponse
+}
+
+type ListAccountsResponse struct {
 	AccountID uint64    `json:"accountID"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdateAt  time.Time `json:"updatedAt"`
