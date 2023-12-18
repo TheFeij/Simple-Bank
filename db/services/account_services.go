@@ -17,7 +17,7 @@ func New(db *gorm.DB) *AccountServices {
 	}
 }
 
-func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (models.Accounts, error) {
+func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
 	newAccount := models.Accounts{
 		Owner:    req.Owner,
 		Currency: req.Currency,
@@ -25,10 +25,37 @@ func (accountServices *AccountServices) CreateAccount(req requests.CreateAccount
 	}
 
 	if err := accountServices.DB.Create(&newAccount).Error; err != nil {
-		return models.Accounts{}, err
+		return responses.CreateAccountResponse{}, err
 	}
 
-	return newAccount, nil
+	response := responses.CreateAccountResponse{
+		AccountID: uint64(newAccount.ID),
+		Owner:     newAccount.Owner,
+		Balance:   newAccount.Balance,
+		CreatedAt: newAccount.CreatedAt,
+		Currency:  newAccount.Currency,
+	}
+	return response, nil
+}
+
+func (accountServices *AccountServices) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
+	var account models.Accounts
+
+	if err := accountServices.DB.First(&account, id).Error; err != nil {
+		return responses.GetAccountResponse{}, err
+	}
+
+	if err := accountServices.DB.Delete(&account).Error; err != nil {
+		return responses.GetAccountResponse{}, err
+	}
+
+	return responses.GetAccountResponse{
+		AccountID: uint64(account.ID),
+		Owner:     account.Owner,
+		Balance:   account.Balance,
+		CreatedAt: account.CreatedAt,
+		Currency:  account.Currency,
+	}, nil
 }
 
 func (accountServices *AccountServices) DepositMoney(req requests.DepositRequest) (models.Entries, error) {
