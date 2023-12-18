@@ -1,14 +1,14 @@
 package services
 
 import (
-	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
+	"Simple-Bank/responses"
 	"Simple-Bank/util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func createRandomAccount(t *testing.T) models.Accounts {
+func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 	testAccount := requests.CreateAccountRequest{
 		Owner:    util.RandomOwner(),
 		Currency: util.RandomCurrency(),
@@ -21,7 +21,7 @@ func createRandomAccount(t *testing.T) models.Accounts {
 	require.Equal(t, testAccount.Owner, account.Owner)
 	require.Equal(t, testAccount.Currency, account.Currency)
 
-	require.NotZero(t, account.ID)
+	require.NotZero(t, account.AccountID)
 	require.NotZero(t, account.CreatedAt)
 
 	return account
@@ -34,12 +34,12 @@ func TestCreateAccount(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	account := createRandomAccount(t)
 
-	response, err := accountServices.getAccount(uint64(account.ID))
+	response, err := accountServices.getAccount(uint64(account.AccountID))
 
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
 
-	require.Equal(t, account.ID, response.AccountID)
+	require.Equal(t, account.AccountID, response.AccountID)
 	require.Equal(t, account.Currency, response.Currency)
 	require.Equal(t, account.Balance, response.Balance)
 	require.Equal(t, account.CreatedAt, response.CreatedAt)
