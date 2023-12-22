@@ -167,7 +167,7 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 	return newTransfer, nil
 }
 
-func (accountServices *AccountServices) listAccounts(limit int) ([]responses.ListAccountsResponse, error) {
+func (accountServices *AccountServices) ListAccounts(limit int) ([]responses.ListAccountsResponse, error) {
 	var accounts []models.Accounts
 
 	if err := accountServices.DB.First(&accounts).Limit(limit).Error; err != nil {
@@ -191,7 +191,7 @@ func (accountServices *AccountServices) listAccounts(limit int) ([]responses.Lis
 	return accountsList, nil
 }
 
-func (accountServices *AccountServices) getAccount(id uint64) (responses.GetAccountResponse, error) {
+func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAccountResponse, error) {
 	var account models.Accounts
 
 	if err := accountServices.DB.Find(&account, id).Error; err != nil {
