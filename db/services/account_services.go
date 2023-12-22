@@ -170,7 +170,7 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 func (accountServices *AccountServices) ListAccounts(limit int) ([]responses.ListAccountsResponse, error) {
 	var accounts []models.Accounts
 
-	if err := accountServices.DB.First(&accounts).Limit(limit).Error; err != nil {
+	if err := accountServices.DB.Limit(limit).Find(&accounts).Error; err != nil {
 		return []responses.ListAccountsResponse{}, err
 	}
 
