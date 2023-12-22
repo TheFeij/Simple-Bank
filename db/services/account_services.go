@@ -194,7 +194,7 @@ func (accountServices *AccountServices) ListAccounts(limit int) ([]responses.Lis
 func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAccountResponse, error) {
 	var account models.Accounts
 
-	if err := accountServices.DB.Find(&account, id).Error; err != nil {
+	if err := accountServices.DB.First(&account, id).Error; err != nil {
 		return responses.GetAccountResponse{}, err
 	}
 
