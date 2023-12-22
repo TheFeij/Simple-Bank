@@ -10,7 +10,7 @@ import (
 var DB *gorm.DB
 
 func Init() {
-	dsn := "host=localhost user=root password=david1380 dbname=simple_bank port=5432 sslmode=disable"
+	dsn := "host=localhost user=root password=1234 dbname=simple_bank port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalln(err)
