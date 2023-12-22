@@ -66,13 +66,13 @@ func TestGetAccountsList(t *testing.T) {
 		createRandomAccount(t)
 	}
 
-	accounts, err := accountServices.ListAccounts(3)
+	accounts, err := accountServices.ListAccounts(5)
 
 	require.NoError(t, err)
-	require.Len(t, accounts, 3)
+	require.NotEmpty(t, accounts)
+	require.Len(t, accounts, 5)
 
 	for _, account := range accounts {
 		require.NotEmpty(t, account)
 	}
-
 }
