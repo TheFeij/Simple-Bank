@@ -35,7 +35,7 @@ func TestCreateAccount(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	account := createRandomAccount(t)
 
-	response, err := accountServices.getAccount(uint64(account.AccountID))
+	response, err := accountServices.GetAccount(uint64(account.AccountID))
 
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
