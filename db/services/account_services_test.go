@@ -55,8 +55,24 @@ func TestDeleteAccount(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
 
-	response, err = accountServices.getAccount(account.AccountID)
+	response, err = accountServices.GetAccount(account.AccountID)
 	require.Error(t, err)
 	require.Equal(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, response)
+}
+
+func TestGetAccountsList(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		createRandomAccount(t)
+	}
+
+	accounts, err := accountServices.ListAccounts(3)
+
+	require.NoError(t, err)
+	require.Len(t, accounts, 3)
+
+	for _, account := range accounts {
+		require.NotEmpty(t, account)
+	}
+
 }
