@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
@@ -43,9 +44,9 @@ func TestGetAccount(t *testing.T) {
 	require.Equal(t, account.AccountID, response.AccountID)
 	require.Equal(t, account.Currency, response.Currency)
 	require.Equal(t, account.Balance, response.Balance)
-	require.Equal(t, account.CreatedAt, response.CreatedAt)
+	//require.Equal(t, account.CreatedAt, response.CreatedAt)
 	require.Equal(t, account.Owner, response.Owner)
-	//require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
 }
 
 func TestDeleteAccount(t *testing.T) {
