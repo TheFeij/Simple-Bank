@@ -14,10 +14,10 @@ droptestdb:
 	docker exec -it postgres-container dropdb simple_bank_test
 
 migrateup:
-	 migrate -path ./db/migration -database "postgres://root:david1380@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank?sslmode=disable" -verbose up
 
 migratedown:
-	 migrate -path ./db/migration -database "postgres://root:david1380@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank?sslmode=disable" -verbose down
 
 test:
 	go test -v -cover ./...
