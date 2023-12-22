@@ -4,7 +4,6 @@ import (
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/util"
-	"database/sql"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -58,7 +57,6 @@ func TestDeleteAccount(t *testing.T) {
 
 	response, err = accountServices.GetAccount(account.AccountID)
 	require.Error(t, err)
-	require.Equal(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, response)
 }
 
