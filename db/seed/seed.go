@@ -31,7 +31,7 @@ func Seed(db *gorm.DB) {
 		Amount:    500,
 	}
 	entry2 := models.Entries{
-		AccountID: 4,
+		AccountID: 1,
 		Amount:    -200,
 	}
 	entry3 := models.Entries{
@@ -49,7 +49,7 @@ func Seed(db *gorm.DB) {
 		Amount:        500,
 	}
 	transfer2 := models.Transfers{
-		FromAccountID: 4,
+		FromAccountID: 1,
 		ToAccountID:   3,
 		Amount:        200,
 	}
