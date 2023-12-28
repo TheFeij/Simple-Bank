@@ -32,8 +32,3 @@ func RandomString(length int) string {
 func RandomOwner() string {
 	return RandomString(10)
 }
-
-func RandomCurrency() string {
-	currencies := []string{"USD", "EUR", "IRL"}
-	return currencies[random.Intn(len(currencies))]
-}

@@ -1,9 +1,8 @@
 package requests
 
 type CreateAccountRequest struct {
-	Owner    string `json:"owner" validate:"required;max=50;min=2"`
-	Currency string `json:"currency" validate:"required;min=2;max=5"`
-	Balance  uint64 `json:"balance" validate:"gt=0"`
+	Owner   string `json:"owner" validate:"required;max=50;min=2"`
+	Balance uint64 `json:"balance" validate:"gt=0"`
 }
 
 type DepositRequest struct {

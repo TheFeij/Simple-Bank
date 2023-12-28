@@ -7,6 +7,5 @@ type TransferResponse struct {
 	SrcAccountID uint64    `json:"srcAccountID"`
 	DstAccountID uint64    `json:"dstAccountID"`
 	Time         time.Time `json:"time"`
-	Currency     string    `json:"currency"`
 	Amount       int64     `json:"amount"`
 }

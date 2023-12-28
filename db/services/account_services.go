@@ -19,9 +19,8 @@ func New(db *gorm.DB) *AccountServices {
 
 func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
 	newAccount := models.Accounts{
-		Owner:    req.Owner,
-		Currency: req.Currency,
-		Balance:  0,
+		Owner:   req.Owner,
+		Balance: 0,
 	}
 
 	if err := accountServices.DB.Create(&newAccount).Error; err != nil {
@@ -33,7 +32,6 @@ func (accountServices *AccountServices) CreateAccount(req requests.CreateAccount
 		Owner:     newAccount.Owner,
 		Balance:   newAccount.Balance,
 		CreatedAt: newAccount.CreatedAt,
-		Currency:  newAccount.Currency,
 	}
 	return response, nil
 }
@@ -54,7 +52,6 @@ func (accountServices *AccountServices) DeleteAccount(id uint64) (responses.GetA
 		Owner:     account.Owner,
 		Balance:   account.Balance,
 		CreatedAt: account.CreatedAt,
-		Currency:  account.Currency,
 	}, nil
 }
 
@@ -178,7 +175,6 @@ func (accountServices *AccountServices) ListAccounts(limit int) ([]responses.Lis
 	for _, account := range accounts {
 		response := responses.ListAccountsResponse{
 			Owner:     account.Owner,
-			Currency:  account.Currency,
 			Balance:   account.Balance,
 			AccountID: uint64(account.ID),
 			CreatedAt: account.CreatedAt,
@@ -200,7 +196,6 @@ func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAcco
 
 	response := responses.GetAccountResponse{
 		Owner:     account.Owner,
-		Currency:  account.Currency,
 		Balance:   account.Balance,
 		AccountID: uint64(account.ID),
 		CreatedAt: account.CreatedAt,

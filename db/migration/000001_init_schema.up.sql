@@ -3,7 +3,6 @@ create table accounts(
                          balance bigint default 0 not null,
                          owner varchar(50) not null,
                          createdAt timestamptz default now() not null,
-                         currency varchar(15) not null
 );
 
 create table entries(

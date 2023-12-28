@@ -7,19 +7,16 @@ import (
 
 func Seed(db *gorm.DB) {
 	account1 := models.Accounts{
-		Owner:    "Abolfazl Moradi Feijani",
-		Balance:  3000,
-		Currency: "USD",
+		Owner:   "Abolfazl Moradi Feijani",
+		Balance: 3000,
 	}
 	account2 := models.Accounts{
-		Owner:    "Ali Mohammadi",
-		Balance:  1000,
-		Currency: "IRL",
+		Owner:   "Ali Mohammadi",
+		Balance: 1000,
 	}
 	account3 := models.Accounts{
-		Owner:    "Ahmad Babaee",
-		Balance:  5000,
-		Currency: "USD",
+		Owner:   "Ahmad Babaee",
+		Balance: 5000,
 	}
 
 	db.Create(&account1)

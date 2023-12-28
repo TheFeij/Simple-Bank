@@ -9,7 +9,6 @@ type CreateAccountResponse struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Owner     string    `json:"owner"`
 	Balance   uint64    `json:"balance"`
-	Currency  string    `json:"currency"`
 }
 
 type GetAccountResponse struct {
@@ -18,7 +17,6 @@ type GetAccountResponse struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 	Owner     string    `json:"owner"`
 	Balance   uint64    `json:"balance"`
-	Currency  string    `json:"currency"`
 }
 
 type ListAccountsResponse struct {
@@ -27,19 +25,16 @@ type ListAccountsResponse struct {
 	UpdateAt  time.Time `json:"updatedAt"`
 	Owner     string    `json:"owner"`
 	Balance   uint64    `json:"balance"`
-	Currency  string    `json:"currency"`
 }
 
 type DepositResponse struct {
 	AccountID uint64    `json:"accountID"`
 	Time      time.Time `json:"time"`
-	Currency  string    `json:"currency"`
 	Amount    int64     `json:"amount"`
 }
 
 type WithdrawResponse struct {
 	AccountID uint64    `json:"accountID"`
 	Time      time.Time `json:"time"`
-	Currency  string    `json:"currency"`
 	Amount    int64     `json:"amount"`
 }

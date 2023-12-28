@@ -11,9 +11,8 @@ import (
 
 func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 	testAccount := requests.CreateAccountRequest{
-		Owner:    util.RandomOwner(),
-		Currency: util.RandomCurrency(),
-		Balance:  uint64(util.RandomInt(0, 9999)),
+		Owner:   util.RandomOwner(),
+		Balance: uint64(util.RandomInt(0, 9999)),
 	}
 
 	account, err := accountServices.CreateAccount(testAccount)
@@ -21,7 +20,6 @@ func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 	require.NotEmpty(t, account)
 
 	require.Equal(t, testAccount.Owner, account.Owner)
-	require.Equal(t, testAccount.Currency, account.Currency)
 	require.Equal(t, testAccount.Balance, account.Balance)
 
 	require.NotZero(t, account.AccountID)
@@ -43,7 +41,6 @@ func TestGetAccount(t *testing.T) {
 	require.NotEmpty(t, response)
 
 	require.Equal(t, account.AccountID, response.AccountID)
-	require.Equal(t, account.Currency, response.Currency)
 	require.Equal(t, account.Balance, response.Balance)
 	//require.Equal(t, account.CreatedAt, response.CreatedAt)
 	require.Equal(t, account.Owner, response.Owner)
@@ -76,4 +73,30 @@ func TestGetAccountsList(t *testing.T) {
 	for _, account := range accounts {
 		require.NotEmpty(t, account)
 	}
+}
+
+func TestTransfer(t *testing.T) {
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+
+	concurrentTransactions := 5
+	amount := 10
+
+	errors := make(chan error)
+	results := make(chan responses.TransferResponse)
+
+	for i := 0; i < concurrentTransactions; i++ {
+		go func(chan responses.TransferResponse, chan error) {
+			transferRequest := requests.TransferRequest{
+				Amount:        uint32(amount),
+				FromAccountID: account1.AccountID,
+				ToAccountID:   account2.AccountID,
+			}
+			transferResponse, err := accountServices.Transfer(transferRequest)
+
+			errors <- err
+			results <- transferResponse
+		}(results, errors)
+	}
+
 }
