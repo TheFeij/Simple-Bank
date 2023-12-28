@@ -213,3 +213,13 @@ func (accountServices *AccountServices) GetTransfer(id uint64) (models.Transfers
 
 	return result, nil
 }
+
+func (accountServices *AccountServices) GetEntry(id uint64) (models.Entries, error) {
+	var result models.Entries
+
+	if err := accountServices.DB.First(&result, id).Error; err != nil {
+		return models.Entries{}, err
+	}
+
+	return result, nil
+}
