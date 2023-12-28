@@ -17,42 +17,31 @@ func New(db *gorm.DB) *AccountServices {
 	}
 }
 
-func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
+func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (models.Accounts, error) {
 	newAccount := models.Accounts{
 		Owner:   req.Owner,
 		Balance: 0,
 	}
 
 	if err := accountServices.DB.Create(&newAccount).Error; err != nil {
-		return responses.CreateAccountResponse{}, err
+		return models.Accounts{}, err
 	}
 
-	response := responses.CreateAccountResponse{
-		AccountID: uint64(newAccount.ID),
-		Owner:     newAccount.Owner,
-		Balance:   newAccount.Balance,
-		CreatedAt: newAccount.CreatedAt,
-	}
-	return response, nil
+	return newAccount, nil
 }
 
-func (accountServices *AccountServices) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
+func (accountServices *AccountServices) DeleteAccount(id uint64) (models.Accounts, error) {
 	var account models.Accounts
 
 	if err := accountServices.DB.First(&account, id).Error; err != nil {
-		return responses.GetAccountResponse{}, err
+		return models.Accounts{}, err
 	}
 
 	if err := accountServices.DB.Delete(&account).Error; err != nil {
-		return responses.GetAccountResponse{}, err
+		return models.Accounts{}, err
 	}
 
-	return responses.GetAccountResponse{
-		AccountID: uint64(account.ID),
-		Owner:     account.Owner,
-		Balance:   account.Balance,
-		CreatedAt: account.CreatedAt,
-	}, nil
+	return account, nil
 }
 
 func (accountServices *AccountServices) DepositMoney(req requests.DepositRequest) (models.Entries, error) {
@@ -187,20 +176,12 @@ func (accountServices *AccountServices) ListAccounts(limit int) ([]responses.Lis
 	return accountsList, nil
 }
 
-func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAccountResponse, error) {
+func (accountServices *AccountServices) GetAccount(id uint64) (models.Accounts, error) {
 	var account models.Accounts
 
 	if err := accountServices.DB.First(&account, id).Error; err != nil {
-		return responses.GetAccountResponse{}, err
+		return models.Accounts{}, err
 	}
 
-	response := responses.GetAccountResponse{
-		Owner:     account.Owner,
-		Balance:   account.Balance,
-		AccountID: uint64(account.ID),
-		CreatedAt: account.CreatedAt,
-		UpdatedAt: account.UpdatedAt,
-	}
-
-	return response, nil
+	return account, nil
 }
