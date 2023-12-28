@@ -145,6 +145,21 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 			return err
 		}
 
+		FromEntry := models.Entries{
+			AccountID: req.FromAccountID,
+			Amount:    -1 * int64(req.Amount),
+		}
+		ToEntry := models.Entries{
+			AccountID: req.ToAccountID,
+			Amount:    int64(req.Amount),
+		}
+		if err := tx.Create(&FromEntry).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(&ToEntry).Error; err != nil {
+			return err
+		}
+
 		return nil
 	}); err != nil {
 		return models.Transfers{}, err
