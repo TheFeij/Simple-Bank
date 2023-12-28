@@ -19,9 +19,9 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	db.AutoMigrate(&models.Accounts{})
 	db.AutoMigrate(&models.Entries{})
 	db.AutoMigrate(&models.Transfers{})
+	db.AutoMigrate(&models.Accounts{})
 
 	accountServices = New(db)
 
