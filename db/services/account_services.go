@@ -185,3 +185,13 @@ func (accountServices *AccountServices) GetAccount(id uint64) (models.Accounts, 
 
 	return account, nil
 }
+
+func (AccountServices *AccountServices) GetTransfer(id uint64) (models.Transfers, error) {
+	var result models.Transfers
+
+	if err := AccountServices.DB.First(&result, id).Error; err != nil {
+		return models.Transfers{}, err
+	}
+
+	return result, nil
+}
