@@ -13,6 +13,7 @@ func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 	testAccount := requests.CreateAccountRequest{
 		Owner:    util.RandomOwner(),
 		Currency: util.RandomCurrency(),
+		Balance:  uint64(util.RandomInt(0, 9999)),
 	}
 
 	account, err := accountServices.CreateAccount(testAccount)
@@ -21,6 +22,7 @@ func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 
 	require.Equal(t, testAccount.Owner, account.Owner)
 	require.Equal(t, testAccount.Currency, account.Currency)
+	require.Equal(t, testAccount.Balance, account.Balance)
 
 	require.NotZero(t, account.AccountID)
 	require.NotZero(t, account.CreatedAt)
