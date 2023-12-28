@@ -20,7 +20,7 @@ func New(db *gorm.DB) *AccountServices {
 func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (models.Accounts, error) {
 	newAccount := models.Accounts{
 		Owner:   req.Owner,
-		Balance: 0,
+		Balance: req.Balance,
 	}
 
 	if err := accountServices.DB.Create(&newAccount).Error; err != nil {
@@ -204,10 +204,10 @@ func (accountServices *AccountServices) GetAccount(id uint64) (models.Accounts, 
 	return account, nil
 }
 
-func (AccountServices *AccountServices) GetTransfer(id uint64) (models.Transfers, error) {
+func (accountServices *AccountServices) GetTransfer(id uint64) (models.Transfers, error) {
 	var result models.Transfers
 
-	if err := AccountServices.DB.First(&result, id).Error; err != nil {
+	if err := accountServices.DB.First(&result, id).Error; err != nil {
 		return models.Transfers{}, err
 	}
 
