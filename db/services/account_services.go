@@ -114,13 +114,31 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 
 	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Exec(`set transaction isolation level repeatable read`).Error
+
+		FromEntry := models.Entries{
+			AccountID: req.FromAccountID,
+			Amount:    -1 * int64(req.Amount),
+		}
+		ToEntry := models.Entries{
+			AccountID: req.ToAccountID,
+			Amount:    int64(req.Amount),
+		}
+		if err := tx.Create(&FromEntry).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(&ToEntry).Error; err != nil {
+			return err
+		}
+
 		if err != nil {
 			return err
 		}
 		newTransfer = models.Transfers{
-			FromAccountID: req.FromAccountID,
-			ToAccountID:   req.ToAccountID,
-			Amount:        req.Amount,
+			FromAccountID:   req.FromAccountID,
+			ToAccountID:     req.ToAccountID,
+			Amount:          req.Amount,
+			OutGoingEntryID: uint64(FromEntry.ID),
+			IncomingEntryID: uint64(ToEntry.ID),
 		}
 
 		if err := tx.Create(&newTransfer).Error; err != nil {
@@ -142,21 +160,6 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 			return err
 		}
 		if err := tx.Save(&dstAccount).Error; err != nil {
-			return err
-		}
-
-		FromEntry := models.Entries{
-			AccountID: req.FromAccountID,
-			Amount:    -1 * int64(req.Amount),
-		}
-		ToEntry := models.Entries{
-			AccountID: req.ToAccountID,
-			Amount:    int64(req.Amount),
-		}
-		if err := tx.Create(&FromEntry).Error; err != nil {
-			return err
-		}
-		if err := tx.Create(&ToEntry).Error; err != nil {
 			return err
 		}
 
