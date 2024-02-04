@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -12,11 +13,12 @@ type CreateAccountResponse struct {
 }
 
 type GetAccountResponse struct {
-	AccountID uint64    `json:"account_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Owner     string    `json:"owner"`
-	Balance   uint64    `json:"balance"`
+	AccountID uint64         `json:"account_id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+	Owner     string         `json:"owner"`
+	Balance   uint64         `json:"balance"`
 }
 
 type ListAccountsResponse struct {
