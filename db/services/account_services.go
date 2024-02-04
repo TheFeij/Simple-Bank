@@ -235,12 +235,14 @@ func (accountServices *AccountServices) GetTransfer(id uint64) (responses.Transf
 	return transfer, nil
 }
 
-func (accountServices *AccountServices) GetEntry(id uint64) (models.Entries, error) {
-	var result models.Entries
+func (accountServices *AccountServices) GetEntry(id uint64) (responses.EntryResponse, error) {
+	var entry responses.EntryResponse
 
-	if err := accountServices.DB.First(&result, id).Error; err != nil {
-		return models.Entries{}, err
+	if err := accountServices.DB.
+		Raw("SELECT id AS entry_id, account_id, created_at, amount FROM entries WHERE id = ?", id).
+		Scan(&entry).Error; err != nil {
+		return responses.EntryResponse{}, err
 	}
 
-	return result, nil
+	return entry, nil
 }
