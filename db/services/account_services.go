@@ -225,6 +225,8 @@ func (accountServices *AccountServices) GetTransfer(id uint64) (responses.Transf
 		Raw("SELECT id AS transfer_id,"+
 			" to_account_id AS src_account_id,"+
 			" from_account_id AS dst_account_id,"+
+			" incoming_entry_id,"+
+			" outgoing_entry_id,"+
 			" created_at,"+
 			" amount"+
 			" FROM transfers WHERE id = ?", id).
