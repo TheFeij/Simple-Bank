@@ -68,9 +68,10 @@ func TestGetAccountsList(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
-	require.Len(t, accounts, 5)
+	require.NotEmpty(t, accounts.Accounts)
+	require.Len(t, accounts.Accounts, 5)
 
-	for _, account := range accounts {
+	for _, account := range accounts.Accounts {
 		require.NotEmpty(t, account)
 	}
 }
