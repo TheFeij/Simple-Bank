@@ -150,14 +150,11 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 			return err
 		}
 
-		if err != nil {
-			return err
-		}
 		newTransfer = models.Transfers{
 			FromAccountID:   req.FromAccountID,
 			ToAccountID:     req.ToAccountID,
 			Amount:          req.Amount,
-			OutGoingEntryID: uint64(FromEntry.ID),
+			OutgoingEntryID: uint64(FromEntry.ID),
 			IncomingEntryID: uint64(ToEntry.ID),
 		}
 
