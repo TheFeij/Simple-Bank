@@ -6,11 +6,11 @@ type CreateAccountRequest struct {
 }
 
 type DepositRequest struct {
-	AccountID uint64 `json:"accountID" validate:"required"`
+	AccountID uint64 `json:"account_id" validate:"required"`
 	Amount    uint32 `json:"amount" validate:"required;gt=0"`
 }
 
 type WithdrawRequest struct {
-	AccountID uint64 `json:"accountID" validate:"required"`
+	AccountID uint64 `json:"account_id" validate:"required"`
 	Amount    uint32 `json:"amount" validate:"required;gt=0"`
 }
