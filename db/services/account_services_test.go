@@ -49,14 +49,14 @@ func TestGetAccount(t *testing.T) {
 
 func TestDeleteAccount(t *testing.T) {
 	account := createRandomAccount(t)
-
 	response, err := accountServices.DeleteAccount(account.AccountID)
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
 
 	response, err = accountServices.GetAccount(account.AccountID)
-	require.Error(t, err)
-	require.Empty(t, response)
+	require.NoError(t, err)
+	require.NotEmpty(t, response)
+	require.NotZero(t, response.DeletedAt)
 }
 
 func TestGetAccountsList(t *testing.T) {
