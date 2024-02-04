@@ -130,7 +130,10 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 	var newTransfer models.Transfers
 
 	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
-		err := tx.Exec(`set transaction isolation level repeatable read`).Error
+		//err := tx.Exec(`set transaction isolation level repeatable read`).Error
+		//if err != nil {
+		//	return err
+		//}
 
 		FromEntry := models.Entries{
 			AccountID: req.FromAccountID,
