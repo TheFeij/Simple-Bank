@@ -20,11 +20,7 @@ type GetAccountResponse struct {
 }
 
 type ListAccountsResponse struct {
-	AccountID uint64    `json:"account_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdateAt  time.Time `json:"update_at"`
-	Owner     string    `json:"owner"`
-	Balance   uint64    `json:"balance"`
+	Accounts []GetAccountResponse `json:"accounts"`
 }
 
 type DepositResponse struct {
