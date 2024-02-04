@@ -17,17 +17,23 @@ func New(db *gorm.DB) *AccountServices {
 	}
 }
 
-func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (models.Accounts, error) {
+func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (responses.GetAccountResponse, error) {
 	newAccount := models.Accounts{
 		Owner:   req.Owner,
 		Balance: req.Balance,
 	}
 
 	if err := accountServices.DB.Create(&newAccount).Error; err != nil {
-		return models.Accounts{}, err
+		return responses.GetAccountResponse{}, err
 	}
 
-	return newAccount, nil
+	return responses.GetAccountResponse{
+		AccountID: uint64(newAccount.ID),
+		CreatedAt: newAccount.CreatedAt,
+		UpdatedAt: newAccount.UpdatedAt,
+		Owner:     newAccount.Owner,
+		Balance:   newAccount.Balance,
+	}, nil
 }
 
 func (accountServices *AccountServices) DeleteAccount(id uint64) (models.Accounts, error) {
@@ -106,9 +112,8 @@ func (accountServices *AccountServices) WithdrawMoney(req requests.WithdrawReque
 	return newEntry, nil
 }
 
-/*
-should validate data prior to db call but here i ignore them for less complexity
-*/
+// Transfer
+// should validate data prior to db call but here i ignore them for less complexity
 func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (models.Transfers, error) {
 	var newTransfer models.Transfers
 
