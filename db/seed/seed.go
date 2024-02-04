@@ -35,10 +35,25 @@ func Seed(db *gorm.DB) {
 		AccountID: 3,
 		Amount:    -300,
 	}
+	entry4 := models.Entries{
+		AccountID: 3,
+		Amount:    200,
+	}
+	entry5 := models.Entries{
+		AccountID: 2,
+		Amount:    300,
+	}
+	entry6 := models.Entries{
+		AccountID: 2,
+		Amount:    -500,
+	}
 
 	db.Create(&entry1)
 	db.Create(&entry2)
 	db.Create(&entry3)
+	db.Create(&entry4)
+	db.Create(&entry5)
+	db.Create(&entry6)
 
 	transfer1 := models.Transfers{
 		FromAccountID: 2,
