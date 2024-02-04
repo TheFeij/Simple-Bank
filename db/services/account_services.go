@@ -36,18 +36,20 @@ func (accountServices *AccountServices) CreateAccount(req requests.CreateAccount
 	}, nil
 }
 
-func (accountServices *AccountServices) DeleteAccount(id uint64) (models.Accounts, error) {
-	var account models.Accounts
+func (accountServices *AccountServices) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
+	var deletedAccount responses.GetAccountResponse
 
-	if err := accountServices.DB.First(&account, id).Error; err != nil {
-		return models.Accounts{}, err
+	if err := accountServices.DB.
+		Raw("SELECT id AS account_id, created_at, updated_at, deleted_at, owner, balance FROM accounts WHERE id = ?", id).
+		Scan(&deletedAccount).Error; err != nil {
+		return responses.GetAccountResponse{}, err
 	}
 
-	if err := accountServices.DB.Delete(&account).Error; err != nil {
-		return models.Accounts{}, err
+	if err := accountServices.DB.Delete(&models.Accounts{}, id).Error; err != nil {
+		return responses.GetAccountResponse{}, err
 	}
 
-	return account, nil
+	return deletedAccount, nil
 }
 
 func (accountServices *AccountServices) DepositMoney(req requests.DepositRequest) (models.Entries, error) {
