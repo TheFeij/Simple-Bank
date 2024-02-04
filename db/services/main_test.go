@@ -1,7 +1,6 @@
 package services
 
 import (
-	"Simple-Bank/db/models"
 	"database/sql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -19,17 +18,13 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	db.AutoMigrate(&models.Entries{})
-	db.AutoMigrate(&models.Transfers{})
-	db.AutoMigrate(&models.Accounts{})
-
 	accountServices = New(db)
 
 	exitCode := m.Run()
 
-	db.Exec("DELETE FROM accounts")
-	db.Exec("DELETE FROM entries")
-	db.Exec("DELETE FROM transfers")
+	//db.Exec("DELETE FROM accounts")
+	//db.Exec("DELETE FROM entries")
+	//db.Exec("DELETE FROM transfers")
 	DB, err := db.DB()
 	if err != nil {
 		log.Fatalln(err)
