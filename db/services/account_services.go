@@ -125,8 +125,8 @@ func (accountServices *AccountServices) WithdrawMoney(req requests.WithdrawReque
 }
 
 // Transfer
-// should validate data prior to db call but here i ignore them for less complexity
-func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (models.Transfers, error) {
+// should validate data prior to db call but here I ignore them for less complexity
+func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (responses.TransferResponse, error) {
 	var newTransfer models.Transfers
 
 	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
@@ -182,10 +182,16 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 
 		return nil
 	}); err != nil {
-		return models.Transfers{}, err
+		return responses.TransferResponse{}, err
 	}
 
-	return newTransfer, nil
+	return responses.TransferResponse{
+		TransferID:   uint64(newTransfer.ID),
+		SrcAccountID: newTransfer.FromAccountID,
+		DstAccountID: newTransfer.ToAccountID,
+		CreatedAt:    newTransfer.CreatedAt,
+		Amount:       int64(newTransfer.Amount),
+	}, nil
 }
 
 func (accountServices *AccountServices) ListAccounts(limit int) ([]responses.ListAccountsResponse, error) {
