@@ -88,7 +88,7 @@ func (accountServices *AccountServices) DepositMoney(req requests.DepositRequest
 	}, nil
 }
 
-func (accountServices *AccountServices) WithdrawMoney(req requests.WithdrawRequest) (models.Entries, error) {
+func (accountServices *AccountServices) WithdrawMoney(req requests.WithdrawRequest) (responses.EntryResponse, error) {
 	var newEntry models.Entries
 
 	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
@@ -113,10 +113,15 @@ func (accountServices *AccountServices) WithdrawMoney(req requests.WithdrawReque
 
 		return nil
 	}); err != nil {
-		return models.Entries{}, err
+		return responses.EntryResponse{}, err
 	}
 
-	return newEntry, nil
+	return responses.EntryResponse{
+		EntryID:   uint64(newEntry.ID),
+		AccountID: newEntry.AccountID,
+		Amount:    newEntry.Amount,
+		CreatedAt: newEntry.CreatedAt,
+	}, nil
 }
 
 // Transfer
