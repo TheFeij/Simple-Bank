@@ -194,24 +194,13 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 	}, nil
 }
 
-func (accountServices *AccountServices) ListAccounts(limit int) ([]responses.ListAccountsResponse, error) {
-	var accounts []models.Accounts
+func (accountServices *AccountServices) ListAccounts(limit int) (responses.ListAccountsResponse, error) {
+	var accountsList responses.ListAccountsResponse
 
-	if err := accountServices.DB.Limit(limit).Find(&accounts).Error; err != nil {
-		return []responses.ListAccountsResponse{}, err
-	}
-
-	var accountsList []responses.ListAccountsResponse
-	for _, account := range accounts {
-		response := responses.ListAccountsResponse{
-			Owner:     account.Owner,
-			Balance:   account.Balance,
-			AccountID: uint64(account.ID),
-			CreatedAt: account.CreatedAt,
-			UpdateAt:  account.UpdatedAt,
-		}
-
-		accountsList = append(accountsList, response)
+	if err := accountServices.DB.
+		Raw("SELECT id AS account_id, created_at, deleted_at, updated_at, owner, balance FROM accounts LIMIT ?", limit).
+		Scan(&accountsList.Accounts).Error; err != nil {
+		return responses.ListAccountsResponse{}, err
 	}
 
 	return accountsList, nil
