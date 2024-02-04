@@ -25,13 +25,8 @@ type ListAccountsResponse struct {
 	Accounts []GetAccountResponse `json:"accounts"`
 }
 
-type DepositResponse struct {
-	AccountID uint64    `json:"account_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Amount    int64     `json:"amount"`
-}
-
-type WithdrawResponse struct {
+type EntryResponse struct {
+	EntryID   uint64    `json:"entry_id"`
 	AccountID uint64    `json:"account_id"`
 	CreatedAt time.Time `json:"created_at"`
 	Amount    int64     `json:"amount"`
