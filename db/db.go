@@ -1,7 +1,6 @@
 package db
 
 import (
-	models2 "Simple-Bank/db/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -15,10 +14,6 @@ func Init() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	db.AutoMigrate(&models2.Accounts{})
-	db.AutoMigrate(&models2.Entries{})
-	db.AutoMigrate(&models2.Transfers{})
 
 	DB = db
 }
