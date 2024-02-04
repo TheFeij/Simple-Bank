@@ -218,14 +218,21 @@ func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAcco
 	return accountResponse, nil
 }
 
-func (accountServices *AccountServices) GetTransfer(id uint64) (models.Transfers, error) {
-	var result models.Transfers
+func (accountServices *AccountServices) GetTransfer(id uint64) (responses.TransferResponse, error) {
+	var transfer responses.TransferResponse
 
-	if err := accountServices.DB.First(&result, id).Error; err != nil {
-		return models.Transfers{}, err
+	if err := accountServices.DB.
+		Raw("SELECT id AS transfer_id,"+
+			" to_account_id AS src_account_id,"+
+			" from_account_id AS dst_account_id,"+
+			" created_at,"+
+			" amount"+
+			" FROM transfers WHERE id = ?", id).
+		Scan(&transfer).Error; err != nil {
+		return responses.TransferResponse{}, err
 	}
 
-	return result, nil
+	return transfer, nil
 }
 
 func (accountServices *AccountServices) GetEntry(id uint64) (models.Entries, error) {
