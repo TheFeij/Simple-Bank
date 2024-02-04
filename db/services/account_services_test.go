@@ -81,10 +81,10 @@ func TestTransfer(t *testing.T) {
 	account2 := createRandomAccount(t)
 
 	concurrentTransactions := 5
-	amount := 10
+	var amount int64 = 10
 
-	errors := make(chan error)
-	results := make(chan responses.TransferResponse)
+	errorsChan := make(chan error)
+	resultsChan := make(chan responses.TransferResponse)
 
 	for i := 0; i < concurrentTransactions; i++ {
 		go func(chan responses.TransferResponse, chan error) {
@@ -93,11 +93,47 @@ func TestTransfer(t *testing.T) {
 				FromAccountID: account1.AccountID,
 				ToAccountID:   account2.AccountID,
 			}
-			transferResponse, err := accountServices.Transfer(transferRequest)
+			transfer, err := accountServices.Transfer(transferRequest)
 
-			errors <- err
-			results <- transferResponse
-		}(results, errors)
+			errorsChan <- err
+			resultsChan <- transfer
+		}(resultsChan, errorsChan)
 	}
 
+	for i := 0; i < concurrentTransactions; i++ {
+		err := <-errorsChan
+		require.NoError(t, err)
+
+		transfer := <-resultsChan
+		require.NotEmpty(t, transfer)
+		require.Equal(t, amount, transfer.Amount)
+		require.Equal(t, account1.AccountID, transfer.SrcAccountID)
+		require.Equal(t, account2.AccountID, transfer.DstAccountID)
+		require.NotZero(t, transfer.CreatedAt)
+		require.NotZero(t, transfer.TransferID)
+
+		var result responses.TransferResponse
+		result, err = accountServices.GetTransfer(transfer.TransferID)
+		require.NoError(t, err)
+
+		var fromEntry responses.EntryResponse
+		fromEntry, err = accountServices.GetEntry(result.OutgoingEntryID)
+		require.NoError(t, err)
+		require.NotEmpty(t, fromEntry)
+		require.Equal(t, account1.AccountID, fromEntry.AccountID)
+		require.Equal(t, -amount, fromEntry.Amount)
+		require.NotZero(t, fromEntry.EntryID)
+		require.NotZero(t, fromEntry.CreatedAt)
+
+		var toEntry responses.EntryResponse
+		toEntry, err = accountServices.GetEntry(result.IncomingEntryID)
+		require.NoError(t, err)
+		require.NotEmpty(t, toEntry)
+		require.Equal(t, account2.AccountID, toEntry.AccountID)
+		require.Equal(t, amount, toEntry.Amount)
+		require.NotZero(t, toEntry.EntryID)
+		require.NotZero(t, toEntry.CreatedAt)
+	}
+
+	//TODO check account balances as well
 }
