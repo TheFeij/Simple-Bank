@@ -29,12 +29,12 @@ type ListAccountsResponse struct {
 
 type DepositResponse struct {
 	AccountID uint64    `json:"account_id"`
-	Time      time.Time `json:"time"`
+	CreatedAt time.Time `json:"created_at"`
 	Amount    int64     `json:"amount"`
 }
 
 type WithdrawResponse struct {
 	AccountID uint64    `json:"account_id"`
-	Time      time.Time `json:"time"`
+	CreatedAt time.Time `json:"created_at"`
 	Amount    int64     `json:"amount"`
 }
