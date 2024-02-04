@@ -10,5 +10,5 @@ type Transfers struct {
 	ToAccountID     uint64 `gorm:"type:bigint;not null"`
 	Amount          uint32 `gorm:"type:bigint;not null"`
 	IncomingEntryID uint64 `gorm:"type:bigint;not null"`
-	OutGoingEntryID uint64 `gorm:"type:bigint;not null"`
+	OutgoingEntryID uint64 `gorm:"type:bigint;not null"`
 }
