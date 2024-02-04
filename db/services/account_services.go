@@ -206,14 +206,16 @@ func (accountServices *AccountServices) ListAccounts(limit int) (responses.ListA
 	return accountsList, nil
 }
 
-func (accountServices *AccountServices) GetAccount(id uint64) (models.Accounts, error) {
-	var account models.Accounts
+func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAccountResponse, error) {
+	var accountResponse responses.GetAccountResponse
 
-	if err := accountServices.DB.First(&account, id).Error; err != nil {
-		return models.Accounts{}, err
+	if err := accountServices.DB.
+		Raw("SELECT id AS account_id, created_at, updated_at, deleted_at, owner, balance FROM accounts WHERE id = ?", id).
+		Scan(&accountResponse).Error; err != nil {
+		return responses.GetAccountResponse{}, err
 	}
 
-	return account, nil
+	return accountResponse, nil
 }
 
 func (accountServices *AccountServices) GetTransfer(id uint64) (models.Transfers, error) {
