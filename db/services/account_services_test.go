@@ -35,16 +35,16 @@ func TestCreateAccount(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	account := createRandomAccount(t)
 
-	response, err := accountServices.GetAccount(uint64(account.AccountID))
+	response, err := accountServices.GetAccount(account.AccountID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
 
 	require.Equal(t, account.AccountID, response.AccountID)
 	require.Equal(t, account.Balance, response.Balance)
-	//require.Equal(t, account.CreatedAt, response.CreatedAt)
 	require.Equal(t, account.Owner, response.Owner)
 	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+	require.Zero(t, response.DeletedAt)
 }
 
 func TestDeleteAccount(t *testing.T) {
