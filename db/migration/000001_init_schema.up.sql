@@ -20,6 +20,8 @@ create table transfers(
     id bigserial primary key,
     from_account_id bigint references accounts(id) on delete cascade not null ,
     to_account_id bigint references accounts(id) on delete cascade not null,
+    incoming_entry_id bigint references entries(id) on delete cascade not null,
+    outgoing_entry_id bigint references entries(id) on delete cascade not null,
     amount bigint not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
