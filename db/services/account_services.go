@@ -5,6 +5,7 @@ import (
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type AccountServices struct {
@@ -130,10 +131,32 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 	var newTransfer models.Transfers
 
 	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
-		//err := tx.Exec(`set transaction isolation level repeatable read`).Error
-		//if err != nil {
-		//	return err
-		//}
+		var srcAccount, dstAccount models.Accounts
+
+		// always acquire the lock of the account with the lower account id
+		if req.FromAccountID < req.ToAccountID {
+			var err error
+			srcAccount, dstAccount, err = acquireLock(tx, req.FromAccountID, req.ToAccountID)
+			if err != nil {
+				return err
+			}
+		} else {
+			var err error
+			dstAccount, srcAccount, err = acquireLock(tx, req.ToAccountID, req.FromAccountID)
+			if err != nil {
+				return err
+			}
+		}
+
+		srcAccount.Balance -= uint64(req.Amount)
+		dstAccount.Balance += uint64(req.Amount)
+
+		if err := tx.Save(&srcAccount).Error; err != nil {
+			return err
+		}
+		if err := tx.Save(&dstAccount).Error; err != nil {
+			return err
+		}
 
 		FromEntry := models.Entries{
 			AccountID: req.FromAccountID,
@@ -159,24 +182,6 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 		}
 
 		if err := tx.Create(&newTransfer).Error; err != nil {
-			return err
-		}
-
-		var srcAccount, dstAccount models.Accounts
-		if err := tx.First(&srcAccount, req.FromAccountID).Error; err != nil {
-			return err
-		}
-		if err := tx.First(&dstAccount, req.ToAccountID).Error; err != nil {
-			return err
-		}
-
-		srcAccount.Balance -= uint64(req.Amount)
-		dstAccount.Balance += uint64(req.Amount)
-
-		if err := tx.Save(&srcAccount).Error; err != nil {
-			return err
-		}
-		if err := tx.Save(&dstAccount).Error; err != nil {
 			return err
 		}
 
@@ -247,4 +252,18 @@ func (accountServices *AccountServices) GetEntry(id uint64) (responses.EntryResp
 	}
 
 	return entry, nil
+}
+
+func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID uint64) (models.Accounts, models.Accounts, error) {
+	var lowerAccount, higherAccount models.Accounts
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+		First(&lowerAccount, lowerAccountID).Error; err != nil {
+		return lowerAccount, higherAccount, err
+	}
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+		First(&higherAccount, higherAccountID).Error; err != nil {
+		return lowerAccount, higherAccount, err
+	}
+
+	return lowerAccount, higherAccount, nil
 }
