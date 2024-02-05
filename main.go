@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Simple-Bank/api"
 	"Simple-Bank/db"
 	"database/sql"
 	"log"
@@ -19,4 +20,9 @@ func main() {
 			log.Fatalln(err)
 		}
 	}(DB)
+
+	server := api.NewServer(db)
+	if err := server.Start("localhost:8080"); err != nil {
+		log.Fatalln("cannot start server: ", err)
+	}
 }
