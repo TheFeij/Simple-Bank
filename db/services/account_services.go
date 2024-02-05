@@ -18,20 +18,19 @@ func New(db *gorm.DB) *Services {
 	}
 }
 
-func (services *Services) CreateAccount(req requests.CreateAccountRequest) (responses.GetAccountResponse, error) {
+func (services *Services) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
 	newAccount := models.Accounts{
 		Owner:   req.Owner,
 		Balance: req.Balance,
 	}
 
 	if err := services.DB.Create(&newAccount).Error; err != nil {
-		return responses.GetAccountResponse{}, err
+		return responses.CreateAccountResponse{}, err
 	}
 
-	return responses.GetAccountResponse{
+	return responses.CreateAccountResponse{
 		AccountID: uint64(newAccount.ID),
 		CreatedAt: newAccount.CreatedAt,
-		UpdatedAt: newAccount.UpdatedAt,
 		Owner:     newAccount.Owner,
 		Balance:   newAccount.Balance,
 	}, nil
