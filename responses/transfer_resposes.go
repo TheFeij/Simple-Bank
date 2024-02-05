@@ -9,5 +9,5 @@ type TransferResponse struct {
 	IncomingEntryID uint64    `json:"incoming_entry_id"`
 	OutgoingEntryID uint64    `json:"out_going_entry_id"`
 	CreatedAt       time.Time `json:"created_at"`
-	Amount          int64     `json:"amount"`
+	Amount          uint32    `json:"amount"`
 }
