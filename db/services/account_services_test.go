@@ -80,8 +80,8 @@ func TestTransfer(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 
-	concurrentTransactions := 5
-	var amount int64 = 10
+	concurrentTransactions := 20
+	var amount uint32 = 10
 
 	errorsChan := make(chan error)
 	resultsChan := make(chan responses.TransferResponse)
@@ -89,7 +89,7 @@ func TestTransfer(t *testing.T) {
 	for i := 0; i < concurrentTransactions; i++ {
 		go func(chan responses.TransferResponse, chan error) {
 			transferRequest := requests.TransferRequest{
-				Amount:        uint32(amount),
+				Amount:        amount,
 				FromAccountID: account1.AccountID,
 				ToAccountID:   account2.AccountID,
 			}
@@ -121,7 +121,7 @@ func TestTransfer(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEmpty(t, fromEntry)
 		require.Equal(t, account1.AccountID, fromEntry.AccountID)
-		require.Equal(t, -amount, fromEntry.Amount)
+		require.Equal(t, amount, uint32(-fromEntry.Amount))
 		require.NotZero(t, fromEntry.EntryID)
 		require.NotZero(t, fromEntry.CreatedAt)
 
@@ -130,10 +130,95 @@ func TestTransfer(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEmpty(t, toEntry)
 		require.Equal(t, account2.AccountID, toEntry.AccountID)
-		require.Equal(t, amount, toEntry.Amount)
+		require.Equal(t, amount, uint32(toEntry.Amount))
 		require.NotZero(t, toEntry.EntryID)
 		require.NotZero(t, toEntry.CreatedAt)
+
+		fromAccount, err := accountServices.GetAccount(account1.AccountID)
+		require.Equal(t, account1.AccountID, fromAccount.AccountID)
+		require.NoError(t, err)
+
+		toAccount, err := accountServices.GetAccount(account2.AccountID)
+		require.Equal(t, account2.AccountID, toAccount.AccountID)
+		require.NoError(t, err)
+
+		var diff1 = account1.Balance - fromAccount.Balance
+		var diff2 = toAccount.Balance - account2.Balance
+
+		require.True(t, diff2 > 0)
+		require.True(t, diff1 > 0)
+		require.Equal(t, diff1, diff2)
+		require.Equal(t, uint64(amount), diff1/(uint64(i)+uint64(1)))
+	}
+}
+
+func TestTransferDeadLock(t *testing.T) {
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+
+	concurrentTransactions := 20
+	var amount uint32 = 10
+
+	errorsChan := make(chan error)
+	resultsChan := make(chan responses.TransferResponse)
+
+	for i := 0; i < concurrentTransactions; i++ {
+		reverse := i%2 == 0
+		go func(chan responses.TransferResponse, chan error, bool) {
+			fromAccountID, toAccountID := account1.AccountID, account2.AccountID
+			if reverse {
+				fromAccountID, toAccountID = toAccountID, fromAccountID
+			}
+			transferRequest := requests.TransferRequest{
+				Amount:        amount,
+				FromAccountID: fromAccountID,
+				ToAccountID:   toAccountID,
+			}
+			transfer, err := accountServices.Transfer(transferRequest)
+			errorsChan <- err
+			resultsChan <- transfer
+		}(resultsChan, errorsChan, reverse)
 	}
 
-	//TODO check account balances as well
+	for i := 0; i < concurrentTransactions; i++ {
+		err := <-errorsChan
+		require.NoError(t, err)
+
+		transfer := <-resultsChan
+		require.NotEmpty(t, transfer)
+
+		var result responses.TransferResponse
+		result, err = accountServices.GetTransfer(transfer.TransferID)
+		require.NoError(t, err)
+		require.NotEmpty(t, result)
+
+		var fromEntry responses.EntryResponse
+		fromEntry, err = accountServices.GetEntry(result.OutgoingEntryID)
+		require.NoError(t, err)
+		require.NotEmpty(t, fromEntry)
+
+		var toEntry responses.EntryResponse
+		toEntry, err = accountServices.GetEntry(result.IncomingEntryID)
+		require.NoError(t, err)
+		require.NotEmpty(t, toEntry)
+
+		fromAccount, err := accountServices.GetAccount(result.SrcAccountID)
+		require.NotEmpty(t, fromAccount)
+		require.NoError(t, err)
+
+		toAccount, err := accountServices.GetAccount(result.DstAccountID)
+		require.NotEmpty(t, toAccount)
+		require.NoError(t, err)
+	}
+
+	account1After, err := accountServices.GetAccount(account1.AccountID)
+	require.NotEmpty(t, account1)
+	require.NoError(t, err)
+	require.Equal(t, account1.Balance, account1After.Balance)
+
+	account2After, err := accountServices.GetAccount(account2.AccountID)
+	require.NotEmpty(t, account2)
+	require.NoError(t, err)
+	require.Equal(t, account2.Balance, account2After.Balance)
+
 }
