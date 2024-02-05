@@ -26,3 +26,7 @@ func NewServer(db *gorm.DB) Server {
 
 	return server
 }
+
+func (server *Server) Start(address string) error {
+	return server.router.Run(address)
+}
