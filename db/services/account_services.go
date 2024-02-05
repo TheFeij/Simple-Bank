@@ -8,23 +8,23 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type AccountServices struct {
+type Services struct {
 	DB *gorm.DB
 }
 
-func New(db *gorm.DB) *AccountServices {
-	return &AccountServices{
+func New(db *gorm.DB) *Services {
+	return &Services{
 		DB: db,
 	}
 }
 
-func (accountServices *AccountServices) CreateAccount(req requests.CreateAccountRequest) (responses.GetAccountResponse, error) {
+func (services *Services) CreateAccount(req requests.CreateAccountRequest) (responses.GetAccountResponse, error) {
 	newAccount := models.Accounts{
 		Owner:   req.Owner,
 		Balance: req.Balance,
 	}
 
-	if err := accountServices.DB.Create(&newAccount).Error; err != nil {
+	if err := services.DB.Create(&newAccount).Error; err != nil {
 		return responses.GetAccountResponse{}, err
 	}
 
@@ -37,26 +37,26 @@ func (accountServices *AccountServices) CreateAccount(req requests.CreateAccount
 	}, nil
 }
 
-func (accountServices *AccountServices) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
+func (services *Services) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
 	var deletedAccount responses.GetAccountResponse
 
-	if err := accountServices.DB.
+	if err := services.DB.
 		Raw("SELECT id AS account_id, created_at, updated_at, deleted_at, owner, balance FROM accounts WHERE id = ?", id).
 		Scan(&deletedAccount).Error; err != nil {
 		return responses.GetAccountResponse{}, err
 	}
 
-	if err := accountServices.DB.Delete(&models.Accounts{}, id).Error; err != nil {
+	if err := services.DB.Delete(&models.Accounts{}, id).Error; err != nil {
 		return responses.GetAccountResponse{}, err
 	}
 
 	return deletedAccount, nil
 }
 
-func (accountServices *AccountServices) DepositMoney(req requests.DepositRequest) (responses.EntryResponse, error) {
+func (services *Services) DepositMoney(req requests.DepositRequest) (responses.EntryResponse, error) {
 	var newEntry models.Entries
 
-	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
+	if err := services.DB.Transaction(func(tx *gorm.DB) error {
 		newEntry = models.Entries{
 			AccountID: req.AccountID,
 			Amount:    int64(req.Amount),
@@ -89,10 +89,10 @@ func (accountServices *AccountServices) DepositMoney(req requests.DepositRequest
 	}, nil
 }
 
-func (accountServices *AccountServices) WithdrawMoney(req requests.WithdrawRequest) (responses.EntryResponse, error) {
+func (services *Services) WithdrawMoney(req requests.WithdrawRequest) (responses.EntryResponse, error) {
 	var newEntry models.Entries
 
-	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
+	if err := services.DB.Transaction(func(tx *gorm.DB) error {
 		newEntry = models.Entries{
 			AccountID: req.AccountID,
 			Amount:    -1 * int64(req.Amount),
@@ -125,12 +125,10 @@ func (accountServices *AccountServices) WithdrawMoney(req requests.WithdrawReque
 	}, nil
 }
 
-// Transfer
-// should validate data prior to db call but here I ignore them for less complexity
-func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (responses.TransferResponse, error) {
+func (services *Services) Transfer(req requests.TransferRequest) (responses.TransferResponse, error) {
 	var newTransfer models.Transfers
 
-	if err := accountServices.DB.Transaction(func(tx *gorm.DB) error {
+	if err := services.DB.Transaction(func(tx *gorm.DB) error {
 		var srcAccount, dstAccount models.Accounts
 
 		// always acquire the lock of the account with the lower account id
@@ -199,10 +197,10 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 	}, nil
 }
 
-func (accountServices *AccountServices) ListAccounts(limit int) (responses.ListAccountsResponse, error) {
+func (services *Services) ListAccounts(limit int) (responses.ListAccountsResponse, error) {
 	var accountsList responses.ListAccountsResponse
 
-	if err := accountServices.DB.
+	if err := services.DB.
 		Raw("SELECT id AS account_id, created_at, deleted_at, updated_at, owner, balance FROM accounts LIMIT ?", limit).
 		Scan(&accountsList.Accounts).Error; err != nil {
 		return responses.ListAccountsResponse{}, err
@@ -211,10 +209,10 @@ func (accountServices *AccountServices) ListAccounts(limit int) (responses.ListA
 	return accountsList, nil
 }
 
-func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAccountResponse, error) {
+func (services *Services) GetAccount(id uint64) (responses.GetAccountResponse, error) {
 	var accountResponse responses.GetAccountResponse
 
-	if err := accountServices.DB.
+	if err := services.DB.
 		Raw("SELECT id AS account_id, created_at, updated_at, deleted_at, owner, balance FROM accounts WHERE id = ?", id).
 		Scan(&accountResponse).Error; err != nil {
 		return responses.GetAccountResponse{}, err
@@ -223,10 +221,10 @@ func (accountServices *AccountServices) GetAccount(id uint64) (responses.GetAcco
 	return accountResponse, nil
 }
 
-func (accountServices *AccountServices) GetTransfer(id uint64) (responses.TransferResponse, error) {
+func (services *Services) GetTransfer(id uint64) (responses.TransferResponse, error) {
 	var transfer responses.TransferResponse
 
-	if err := accountServices.DB.
+	if err := services.DB.
 		Raw("SELECT id AS transfer_id,"+
 			" to_account_id AS src_account_id,"+
 			" from_account_id AS dst_account_id,"+
@@ -242,10 +240,10 @@ func (accountServices *AccountServices) GetTransfer(id uint64) (responses.Transf
 	return transfer, nil
 }
 
-func (accountServices *AccountServices) GetEntry(id uint64) (responses.EntryResponse, error) {
+func (services *Services) GetEntry(id uint64) (responses.EntryResponse, error) {
 	var entry responses.EntryResponse
 
-	if err := accountServices.DB.
+	if err := services.DB.
 		Raw("SELECT id AS entry_id, account_id, created_at, amount FROM entries WHERE id = ?", id).
 		Scan(&entry).Error; err != nil {
 		return responses.EntryResponse{}, err

@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-var accountServices *AccountServices
+var accountServices *Services
 
 func TestMain(m *testing.M) {
 	dsn := "host=localhost user=root password=1234 dbname=simple_bank_test port=5432 sslmode=disable"
@@ -22,9 +22,9 @@ func TestMain(m *testing.M) {
 
 	exitCode := m.Run()
 
-	//db.Exec("DELETE FROM accounts")
-	//db.Exec("DELETE FROM entries")
-	//db.Exec("DELETE FROM transfers")
+	db.Exec("DELETE FROM accounts")
+	db.Exec("DELETE FROM entries")
+	db.Exec("DELETE FROM transfers")
 	DB, err := db.DB()
 	if err != nil {
 		log.Fatalln(err)
