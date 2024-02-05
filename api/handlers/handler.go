@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"Simple-Bank/db/services"
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -12,4 +13,8 @@ func New(services *services.Services) *Handler {
 	return &Handler{
 		services: services,
 	}
+}
+
+func errorResponse(err error) gin.H {
+	return gin.H{"error": err.Error()}
 }
