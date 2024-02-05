@@ -190,7 +190,7 @@ func (accountServices *AccountServices) Transfer(req requests.TransferRequest) (
 		SrcAccountID: newTransfer.FromAccountID,
 		DstAccountID: newTransfer.ToAccountID,
 		CreatedAt:    newTransfer.CreatedAt,
-		Amount:       int64(newTransfer.Amount),
+		Amount:       uint32(int64(newTransfer.Amount)),
 	}, nil
 }
 
