@@ -25,8 +25,11 @@ testmigrateup:
 testmigratedown:
 	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank_test?sslmode=disable" -verbose down
 
+server:
+	go run main.go
+
 test:
 	go test -v -cover ./...
 
 .PHONY: postgres, createdb, dropdb, createtestdb, droptestdb,
-.PHONY: migratedown, migrateup, testmigratedown. testmigrateup
+.PHONY: migratedown, migrateup, testmigratedown. testmigrateup, server
