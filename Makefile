@@ -1,5 +1,5 @@
 postgres:
-	docker run --name postgres-container -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=david1380 -d postgres:16rc1-alpine3.18
+	docker run --name postgres-container -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=1234 -d postgres:16rc1-alpine3.18
 
 createdb:
 	docker exec -it postgres-container createdb --username=root --owner=root simple_bank
