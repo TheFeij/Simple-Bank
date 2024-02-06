@@ -23,6 +23,7 @@ func NewServer(db *gorm.DB) Server {
 		context.JSON(http.StatusOK, gin.H{"message": "Welcome to our bank"})
 	})
 	server.router.POST("/accounts", server.handlers.CreateAccount)
+	server.router.GET("/accounts/:id", server.handlers.GetAccount)
 
 	return server
 }
