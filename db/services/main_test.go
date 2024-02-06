@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-var accountServices *Services
+var accountServices Services
 
 func TestMain(m *testing.M) {
 	dsn := "host=localhost user=root password=1234 dbname=simple_bank_test port=5432 sslmode=disable"
@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	accountServices = New(db)
+	accountServices = NewSQLServices(db)
 
 	exitCode := m.Run()
 
