@@ -6,10 +6,10 @@ import (
 )
 
 type Handler struct {
-	services *services.Services
+	services services.Services
 }
 
-func New(services *services.Services) *Handler {
+func New(services services.Services) *Handler {
 	return &Handler{
 		services: services,
 	}
