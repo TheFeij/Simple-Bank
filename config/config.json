@@ -1,0 +1,10 @@
+{
+  "DATABASE": {
+    "DRIVER": "postgres",
+    "SOURCE": "postgres://root:1234@localhost:5432/simple_bank?sslmode=disable"
+  },
+  "SERVER": {
+    "HOST": "localhost",
+    "PORT": "8080"
+  }
+}
