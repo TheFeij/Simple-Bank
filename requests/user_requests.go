@@ -2,7 +2,7 @@ package requests
 
 type CreateAccountRequest struct {
 	Owner   string `json:"owner" binding:"required,alpha"`
-	Balance uint64 `json:"balance" binding:"gt=0"`
+	Balance uint64 `json:"balance" binding:"gte=0"`
 }
 
 type DepositRequest struct {
