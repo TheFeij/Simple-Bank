@@ -16,7 +16,7 @@ type Server struct {
 func NewServer(db *gorm.DB) Server {
 	server := Server{
 		router:   gin.Default(),
-		handlers: handlers.New(services.New(db)),
+		handlers: handlers.New(services.NewSQLServices(db)),
 	}
 
 	server.router.GET("/", func(context *gin.Context) {
