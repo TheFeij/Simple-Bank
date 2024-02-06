@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"Simple-Bank/requests"
+	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -16,6 +18,26 @@ func (handler *Handler) CreateAccount(context *gin.Context) {
 
 	res, err := handler.services.CreateAccount(req)
 	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	context.JSON(http.StatusOK, res)
+}
+
+func (handler *Handler) GetAccount(context *gin.Context) {
+	var req requests.GetAccountRequest
+	if err := context.ShouldBindUri(&req); err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	res, err := handler.services.GetAccount(req.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			context.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
