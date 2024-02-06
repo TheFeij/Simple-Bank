@@ -44,3 +44,23 @@ func (handler *Handler) GetAccount(context *gin.Context) {
 
 	context.JSON(http.StatusOK, res)
 }
+
+func (handler *Handler) GetAccountsList(context *gin.Context) {
+	var req requests.GetAccountsListRequest
+	if err := context.ShouldBindQuery(&req); err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	res, err := handler.services.ListAccounts(req.PageID, req.PageSize)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			context.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	context.JSON(http.StatusOK, res)
+}
