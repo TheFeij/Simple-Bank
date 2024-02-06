@@ -4,6 +4,7 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
+	"database/sql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -211,10 +212,15 @@ func (services *Services) ListAccounts(limit int) (responses.ListAccountsRespons
 func (services *Services) GetAccount(id uint64) (responses.GetAccountResponse, error) {
 	var accountResponse responses.GetAccountResponse
 
-	if err := services.DB.
+	res := services.DB.
 		Raw("SELECT id AS account_id, created_at, updated_at, deleted_at, owner, balance FROM accounts WHERE id = ?", id).
-		Scan(&accountResponse).Error; err != nil {
-		return responses.GetAccountResponse{}, err
+		Scan(&accountResponse)
+
+	if res.RowsAffected == 0 {
+		return accountResponse, sql.ErrNoRows
+	}
+	if res.Error != nil {
+		return accountResponse, res.Error
 	}
 
 	return accountResponse, nil
