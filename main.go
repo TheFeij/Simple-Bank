@@ -2,13 +2,19 @@ package main
 
 import (
 	"Simple-Bank/api"
+	"Simple-Bank/config"
 	"Simple-Bank/db"
 	"database/sql"
 	"log"
 )
 
 func main() {
-	db.Init()
+	configs, err := config.LoadConfig("./config")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	db.Init(configs.Database.Source)
 	db := db.GetDB()
 	DB, err := db.DB()
 	if err != nil {
@@ -22,7 +28,7 @@ func main() {
 	}(DB)
 
 	server := api.NewServer(db)
-	if err := server.Start("localhost:8080"); err != nil {
+	if err := server.Start(configs.Server.Host + ":" + configs.Server.Port); err != nil {
 		log.Fatalln("cannot start server: ", err)
 	}
 }
