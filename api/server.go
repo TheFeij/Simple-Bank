@@ -24,6 +24,7 @@ func NewServer(db *gorm.DB) Server {
 	})
 	server.router.POST("/accounts", server.handlers.CreateAccount)
 	server.router.GET("/accounts/:id", server.handlers.GetAccount)
+	server.router.GET("/accounts", server.handlers.GetAccountsList)
 
 	return server
 }
