@@ -197,13 +197,25 @@ func (services *Services) Transfer(req requests.TransferRequest) (responses.Tran
 	}, nil
 }
 
-func (services *Services) ListAccounts(limit int) (responses.ListAccountsResponse, error) {
+func (services *Services) ListAccounts(pageNumber, pageSize uint64) (responses.ListAccountsResponse, error) {
 	var accountsList responses.ListAccountsResponse
 
-	if err := services.DB.
-		Raw("SELECT id AS account_id, created_at, deleted_at, updated_at, owner, balance FROM accounts LIMIT ?", limit).
-		Scan(&accountsList.Accounts).Error; err != nil {
-		return responses.ListAccountsResponse{}, err
+	offset := (pageNumber - 1) * pageSize
+	res := services.DB.
+		Raw("SELECT id AS account_id,"+
+			" created_at,"+
+			" deleted_at,"+
+			" updated_at,"+
+			" owner,"+
+			" balance"+
+			" FROM accounts LIMIT ? OFFSET ?", pageSize, offset).
+		Scan(&accountsList.Accounts)
+
+	if res.RowsAffected == 0 {
+		return accountsList, sql.ErrNoRows
+	}
+	if res.Error != nil {
+		return accountsList, res.Error
 	}
 
 	return accountsList, nil
