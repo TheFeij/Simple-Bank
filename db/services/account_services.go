@@ -9,17 +9,17 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type Services struct {
+type SQLServices struct {
 	DB *gorm.DB
 }
 
-func New(db *gorm.DB) *Services {
-	return &Services{
+func NewSQLServices(db *gorm.DB) Services {
+	return &SQLServices{
 		DB: db,
 	}
 }
 
-func (services *Services) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
+func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
 	newAccount := models.Accounts{
 		Owner:   req.Owner,
 		Balance: req.Balance,
@@ -37,7 +37,7 @@ func (services *Services) CreateAccount(req requests.CreateAccountRequest) (resp
 	}, nil
 }
 
-func (services *Services) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
+func (services *SQLServices) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
 	var deletedAccount responses.GetAccountResponse
 
 	if err := services.DB.
@@ -53,7 +53,7 @@ func (services *Services) DeleteAccount(id uint64) (responses.GetAccountResponse
 	return deletedAccount, nil
 }
 
-func (services *Services) DepositMoney(req requests.DepositRequest) (responses.EntryResponse, error) {
+func (services *SQLServices) DepositMoney(req requests.DepositRequest) (responses.EntryResponse, error) {
 	var newEntry models.Entries
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -89,7 +89,7 @@ func (services *Services) DepositMoney(req requests.DepositRequest) (responses.E
 	}, nil
 }
 
-func (services *Services) WithdrawMoney(req requests.WithdrawRequest) (responses.EntryResponse, error) {
+func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (responses.EntryResponse, error) {
 	var newEntry models.Entries
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -125,7 +125,7 @@ func (services *Services) WithdrawMoney(req requests.WithdrawRequest) (responses
 	}, nil
 }
 
-func (services *Services) Transfer(req requests.TransferRequest) (responses.TransferResponse, error) {
+func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.TransferResponse, error) {
 	var newTransfer models.Transfers
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -197,7 +197,7 @@ func (services *Services) Transfer(req requests.TransferRequest) (responses.Tran
 	}, nil
 }
 
-func (services *Services) ListAccounts(pageNumber, pageSize uint64) (responses.ListAccountsResponse, error) {
+func (services *SQLServices) ListAccounts(pageNumber, pageSize uint64) (responses.ListAccountsResponse, error) {
 	var accountsList responses.ListAccountsResponse
 
 	offset := (pageNumber - 1) * pageSize
@@ -221,7 +221,7 @@ func (services *Services) ListAccounts(pageNumber, pageSize uint64) (responses.L
 	return accountsList, nil
 }
 
-func (services *Services) GetAccount(id uint64) (responses.GetAccountResponse, error) {
+func (services *SQLServices) GetAccount(id uint64) (responses.GetAccountResponse, error) {
 	var accountResponse responses.GetAccountResponse
 
 	res := services.DB.
@@ -238,7 +238,7 @@ func (services *Services) GetAccount(id uint64) (responses.GetAccountResponse, e
 	return accountResponse, nil
 }
 
-func (services *Services) GetTransfer(id uint64) (responses.TransferResponse, error) {
+func (services *SQLServices) GetTransfer(id uint64) (responses.TransferResponse, error) {
 	var transfer responses.TransferResponse
 
 	if err := services.DB.
@@ -257,7 +257,7 @@ func (services *Services) GetTransfer(id uint64) (responses.TransferResponse, er
 	return transfer, nil
 }
 
-func (services *Services) GetEntry(id uint64) (responses.EntryResponse, error) {
+func (services *SQLServices) GetEntry(id uint64) (responses.EntryResponse, error) {
 	var entry responses.EntryResponse
 
 	if err := services.DB.
