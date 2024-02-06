@@ -4,6 +4,7 @@ import (
 	"Simple-Bank/api"
 	"Simple-Bank/config"
 	"Simple-Bank/db"
+	"Simple-Bank/db/services"
 	"database/sql"
 	"log"
 )
@@ -27,7 +28,7 @@ func main() {
 		}
 	}(DB)
 
-	server := api.NewServer(db)
+	server := api.NewServer(services.NewSQLServices(db))
 	if err := server.Start(configs.Server.Host + ":" + configs.Server.Port); err != nil {
 		log.Fatalln("cannot start server: ", err)
 	}

@@ -4,7 +4,6 @@ import (
 	"Simple-Bank/api/handlers"
 	"Simple-Bank/db/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -13,10 +12,10 @@ type Server struct {
 	handlers *handlers.Handler
 }
 
-func NewServer(db *gorm.DB) Server {
+func NewServer(services services.Services) Server {
 	server := Server{
 		router:   gin.Default(),
-		handlers: handlers.New(services.NewSQLServices(db)),
+		handlers: handlers.New(services),
 	}
 
 	server.router.GET("/", func(context *gin.Context) {
