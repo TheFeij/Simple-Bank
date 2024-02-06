@@ -28,7 +28,3 @@ func RandomString(length int) string {
 
 	return randomString.String()
 }
-
-func RandomOwner() string {
-	return RandomString(10)
-}
