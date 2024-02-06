@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (handler *Handler) CreatAccount(context *gin.Context) {
+func (handler *Handler) CreateAccount(context *gin.Context) {
 	var req requests.CreateAccountRequest
 
 	if err := context.ShouldBindJSON(&req); err != nil {
