@@ -5,6 +5,7 @@ import (
 	"Simple-Bank/db/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"net/http/httptest"
 )
 
 type Server struct {
@@ -30,4 +31,8 @@ func NewServer(services services.Services) Server {
 
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
+}
+
+func (server *Server) RouterServeHTTP(recorder *httptest.ResponseRecorder, req *http.Request) {
+	server.router.ServeHTTP(recorder, req)
 }
