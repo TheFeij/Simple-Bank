@@ -11,7 +11,7 @@ var ValidUsername validator.Func = func(fl validator.FieldLevel) bool {
 			return false
 		}
 
-		match, _ := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9_]*$", username)
+		match, _ := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9_]*[a-zA-Z0-9]$", username)
 		return match
 	}
 	return false
