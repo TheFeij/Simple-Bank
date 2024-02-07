@@ -1,7 +1,6 @@
-package handlers
+package api
 
 import (
-	"Simple-Bank/api"
 	mockdb "Simple-Bank/db/mock"
 	"Simple-Bank/responses"
 	"Simple-Bank/util"
@@ -33,7 +32,7 @@ func TestGetAccountAPI(t *testing.T) {
 		Return(account, responseError)
 
 	// testing http server
-	server := api.NewServer(services)
+	server := NewServer(services)
 	recorder := httptest.NewRecorder()
 
 	url := fmt.Sprintf("/accounts/%d", account.AccountID)

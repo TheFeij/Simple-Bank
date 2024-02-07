@@ -1,7 +1,6 @@
 package api
 
 import (
-	"Simple-Bank/api/handlers"
 	"Simple-Bank/db/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -10,13 +9,13 @@ import (
 
 type Server struct {
 	router   *gin.Engine
-	handlers *handlers.Handler
+	handlers *Handler
 }
 
 func NewServer(services services.Services) Server {
 	server := Server{
 		router:   gin.Default(),
-		handlers: handlers.New(services),
+		handlers: New(services),
 	}
 
 	server.router.GET("/", func(context *gin.Context) {
