@@ -37,3 +37,15 @@ func RandomString(length int, alphabet string) string {
 func RandomID() int64 {
 	return RandomInt(1, math.MaxInt64)
 }
+
+func RandomUsername() string {
+	username := RandomString(1, lowerCases+upperCases)
+	username += RandomString(
+		int(RandomInt(3, 62)),
+		lowerCases+upperCases+numbers+"_")
+	username += RandomString(
+		int(RandomInt(0, 1)),
+		lowerCases+upperCases+numbers)
+
+	return username
+}
