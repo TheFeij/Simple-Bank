@@ -61,3 +61,6 @@ func RandomPassword() string {
 
 	return password
 }
+func RandomBalance() int64 {
+	return RandomInt(0, math.MaxInt64)
+}
