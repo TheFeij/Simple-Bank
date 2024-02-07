@@ -37,7 +37,7 @@ func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (r
 	}, nil
 }
 
-func (services *SQLServices) DeleteAccount(id uint64) (responses.GetAccountResponse, error) {
+func (services *SQLServices) DeleteAccount(id int64) (responses.GetAccountResponse, error) {
 	var deletedAccount responses.GetAccountResponse
 
 	if err := services.DB.
@@ -197,10 +197,10 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 	}, nil
 }
 
-func (services *SQLServices) ListAccounts(pageNumber, pageSize uint64) (responses.ListAccountsResponse, error) {
+func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) (responses.ListAccountsResponse, error) {
 	var accountsList responses.ListAccountsResponse
 
-	offset := (pageNumber - 1) * pageSize
+	offset := (pageNumber - 1) * int64(pageSize)
 	res := services.DB.
 		Raw("SELECT id AS account_id,"+
 			" created_at,"+
@@ -221,7 +221,7 @@ func (services *SQLServices) ListAccounts(pageNumber, pageSize uint64) (response
 	return accountsList, nil
 }
 
-func (services *SQLServices) GetAccount(id uint64) (responses.GetAccountResponse, error) {
+func (services *SQLServices) GetAccount(id int64) (responses.GetAccountResponse, error) {
 	var accountResponse responses.GetAccountResponse
 
 	res := services.DB.
@@ -238,7 +238,7 @@ func (services *SQLServices) GetAccount(id uint64) (responses.GetAccountResponse
 	return accountResponse, nil
 }
 
-func (services *SQLServices) GetTransfer(id uint64) (responses.TransferResponse, error) {
+func (services *SQLServices) GetTransfer(id int64) (responses.TransferResponse, error) {
 	var transfer responses.TransferResponse
 
 	if err := services.DB.
@@ -257,7 +257,7 @@ func (services *SQLServices) GetTransfer(id uint64) (responses.TransferResponse,
 	return transfer, nil
 }
 
-func (services *SQLServices) GetEntry(id uint64) (responses.EntryResponse, error) {
+func (services *SQLServices) GetEntry(id int64) (responses.EntryResponse, error) {
 	var entry responses.EntryResponse
 
 	if err := services.DB.
