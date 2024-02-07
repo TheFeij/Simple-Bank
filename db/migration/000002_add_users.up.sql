@@ -1,7 +1,7 @@
 create table users (
-    username varchar(50) primary key,
+    username varchar(64) primary key,
     hashed_password varchar not null,
-    fullname varchar(50) not null,
+    fullname varchar(64) not null,
     email varchar unique not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
