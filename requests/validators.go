@@ -43,3 +43,18 @@ var ValidPassword validator.Func = func(fl validator.FieldLevel) bool {
 	}
 	return false
 }
+
+var ValidFullname validator.Func = func(fl validator.FieldLevel) bool {
+	if fullname, ok := fl.Field().Interface().(string); ok {
+		if len(fullname) < 3 || len(fullname) > 64 {
+			return false
+		}
+
+		if match, _ := regexp.MatchString("^[a-zA-Z]+([\\\\s][a-zA-Z]+)*$", fullname); !match {
+			return false
+		}
+
+		return true
+	}
+	return false
+}
