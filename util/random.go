@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+var lowerCases = "abcdefghijklmnopqrstuvwxyz"
+var upperCases = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+var numbers = "0123456789"
+var specials = "_!@#$%&*^"
+
 var random *rand.Rand
 
 func init() {
