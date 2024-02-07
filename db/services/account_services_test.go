@@ -64,7 +64,7 @@ func TestGetAccountsList(t *testing.T) {
 		createRandomAccount(t)
 	}
 
-	accounts, err := accountServices.ListAccounts(5)
+	accounts, err := accountServices.ListAccounts(uint64(util.RandomInt(1, 2)), 5)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
