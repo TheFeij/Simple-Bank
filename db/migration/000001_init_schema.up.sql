@@ -4,7 +4,7 @@ create table accounts(
     owner varchar(64) not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
-    deleted_at timestamptz
+    deleted_at timestamptz default '0001-01-01 00:00:00Z' not null
 );
 
 create table entries(
@@ -13,7 +13,7 @@ create table entries(
     amount bigint not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
-    deleted_at timestamptz
+    deleted_at timestamptz default '0001-01-01 00:00:00Z' not null
 );
 
 create table transfers(
@@ -25,5 +25,5 @@ create table transfers(
     amount bigint not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
-    deleted_at timestamptz
+    deleted_at timestamptz default '0001-01-01 00:00:00Z' not null
 )
