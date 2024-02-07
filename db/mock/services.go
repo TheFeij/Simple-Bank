@@ -56,7 +56,7 @@ func (mr *MockServicesMockRecorder) CreateAccount(arg0 any) *gomock.Call {
 }
 
 // DeleteAccount mocks base method.
-func (m *MockServices) DeleteAccount(arg0 uint64) (responses.GetAccountResponse, error) {
+func (m *MockServices) DeleteAccount(arg0 int64) (responses.GetAccountResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteAccount", arg0)
 	ret0, _ := ret[0].(responses.GetAccountResponse)
@@ -86,7 +86,7 @@ func (mr *MockServicesMockRecorder) DepositMoney(arg0 any) *gomock.Call {
 }
 
 // GetAccount mocks base method.
-func (m *MockServices) GetAccount(arg0 uint64) (responses.GetAccountResponse, error) {
+func (m *MockServices) GetAccount(arg0 int64) (responses.GetAccountResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", arg0)
 	ret0, _ := ret[0].(responses.GetAccountResponse)
@@ -101,7 +101,7 @@ func (mr *MockServicesMockRecorder) GetAccount(arg0 any) *gomock.Call {
 }
 
 // GetEntry mocks base method.
-func (m *MockServices) GetEntry(arg0 uint64) (responses.EntryResponse, error) {
+func (m *MockServices) GetEntry(arg0 int64) (responses.EntryResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEntry", arg0)
 	ret0, _ := ret[0].(responses.EntryResponse)
@@ -116,7 +116,7 @@ func (mr *MockServicesMockRecorder) GetEntry(arg0 any) *gomock.Call {
 }
 
 // GetTransfer mocks base method.
-func (m *MockServices) GetTransfer(arg0 uint64) (responses.TransferResponse, error) {
+func (m *MockServices) GetTransfer(arg0 int64) (responses.TransferResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTransfer", arg0)
 	ret0, _ := ret[0].(responses.TransferResponse)
@@ -131,7 +131,7 @@ func (mr *MockServicesMockRecorder) GetTransfer(arg0 any) *gomock.Call {
 }
 
 // ListAccounts mocks base method.
-func (m *MockServices) ListAccounts(arg0, arg1 uint64) (responses.ListAccountsResponse, error) {
+func (m *MockServices) ListAccounts(arg0 int64, arg1 int8) (responses.ListAccountsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAccounts", arg0, arg1)
 	ret0, _ := ret[0].(responses.ListAccountsResponse)
