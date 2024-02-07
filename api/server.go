@@ -36,7 +36,7 @@ func NewServer(services services.Services) Server {
 
 func registerCustomValidators() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		err := v.RegisterValidation("validOwner", requests.ValidOwner)
+		err := v.RegisterValidation("validOwner", requests.ValidUsername)
 		if err != nil {
 			log.Fatal("could not register custom validators")
 		}
