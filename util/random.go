@@ -67,3 +67,14 @@ func RandomBalance() int64 {
 func RandomAmount() int32 {
 	return int32(RandomInt(0, math.MinInt32))
 }
+
+func RandomFullname() string {
+	randomString := RandomString(int(RandomInt(3, 64)), upperCases+lowerCases)
+
+	index := RandomInt(1, int64(len(randomString)-2))
+	fullname := randomString[:index]
+	fullname += " "
+	fullname += randomString[index+1:]
+
+	return fullname
+}
