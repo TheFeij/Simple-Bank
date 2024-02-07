@@ -111,12 +111,12 @@ func TestGetAccountAPI(t *testing.T) {
 
 func randomAccount() responses.GetAccountResponse {
 	return responses.GetAccountResponse{
-		AccountID: uint64(util.RandomInt(1, 1000)),
+		AccountID: util.RandomID(),
 		CreatedAt: time.Now().Truncate(time.Nanosecond).UTC(),
 		UpdatedAt: time.Now().Truncate(time.Nanosecond).UTC(),
 		DeletedAt: gorm.DeletedAt{},
-		Owner:     util.RandomString(int(util.RandomInt(1, 50))),
-		Balance:   uint64(util.RandomInt(0, 9999)),
+		Owner:     util.RandomUsername(),
+		Balance:   util.RandomBalance(),
 	}
 }
 
