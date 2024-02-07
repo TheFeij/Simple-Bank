@@ -7,14 +7,14 @@ import (
 
 type Services interface {
 	CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error)
-	DeleteAccount(id uint64) (responses.GetAccountResponse, error)
+	DeleteAccount(id int64) (responses.GetAccountResponse, error)
 	DepositMoney(req requests.DepositRequest) (responses.EntryResponse, error)
 	WithdrawMoney(req requests.WithdrawRequest) (responses.EntryResponse, error)
 	Transfer(req requests.TransferRequest) (responses.TransferResponse, error)
-	ListAccounts(pageNumber, pageSize uint64) (responses.ListAccountsResponse, error)
-	GetAccount(id uint64) (responses.GetAccountResponse, error)
-	GetTransfer(id uint64) (responses.TransferResponse, error)
-	GetEntry(id uint64) (responses.EntryResponse, error)
+	ListAccounts(pageNumber int64, pageSize int8) (responses.ListAccountsResponse, error)
+	GetAccount(id int64) (responses.GetAccountResponse, error)
+	GetTransfer(id int64) (responses.TransferResponse, error)
+	GetEntry(id int64) (responses.EntryResponse, error)
 }
 
 var _ Services = (*SQLServices)(nil)
