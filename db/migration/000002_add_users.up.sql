@@ -5,7 +5,7 @@ create table users (
     email varchar unique not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
-    deleted_at timestamptz
+    deleted_at timestamptz default '0001-01-01 00:00:00Z' not null
 );
 
 alter table "accounts" add constraint accounts_owner_fk
