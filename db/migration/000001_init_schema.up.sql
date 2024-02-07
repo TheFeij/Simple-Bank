@@ -1,7 +1,7 @@
 create table accounts(
     id bigserial primary key,
     balance bigint default 0 not null,
-    owner varchar(50) not null,
+    owner varchar(64) not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
     deleted_at timestamptz
