@@ -21,8 +21,7 @@ func RandomInt(min int64, max int64) int64 {
 	return random.Int63n(max-min+1) + min
 }
 
-func RandomString(length int) string {
-	alphabet := "abcdefghijklmnopqrstuvwxyz"
+func RandomString(length int, alphabet string) string {
 	alphabetLength := len(alphabet)
 	var randomString strings.Builder
 
