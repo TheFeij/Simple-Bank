@@ -2,11 +2,11 @@ package requests
 
 type CreateAccountRequest struct {
 	Owner   string `json:"owner" binding:"required,alpha,validUsername"`
-	Balance uint64 `json:"balance" binding:"gte=0"`
+	Balance int64  `json:"balance" binding:"gte=0"`
 }
 
 type GetAccountRequest struct {
-	ID uint64 `uri:"id" binding:"required,min=1"`
+	ID int64 `uri:"id" binding:"required,min=1"`
 }
 
 type GetAccountsListRequest struct {
@@ -15,11 +15,11 @@ type GetAccountsListRequest struct {
 }
 
 type DepositRequest struct {
-	AccountID uint64 `json:"account_id" binding:"required"`
-	Amount    uint32 `json:"amount" binding:"required,gt=0"`
+	AccountID int64 `json:"account_id" binding:"required"`
+	Amount    int32 `json:"amount" binding:"required,gt=0"`
 }
 
 type WithdrawRequest struct {
-	AccountID uint64 `json:"account_id" binding:"required"`
-	Amount    uint32 `json:"amount" binding:"required,gt=0"`
+	AccountID int64 `json:"account_id" binding:"required"`
+	Amount    int32 `json:"amount" binding:"required,gt=0"`
 }
