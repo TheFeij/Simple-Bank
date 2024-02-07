@@ -6,6 +6,6 @@ import (
 
 type Entries struct {
 	gorm.Model
-	AccountID uint64 `gorm:"type:bigint;not null"`
-	Amount    int64  `gorm:"type:bigint;not null"`
+	AccountID uint64 `gorm:"column:account_id"`
+	Amount    int64  `gorm:"column:amount"`
 }
