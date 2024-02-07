@@ -30,7 +30,7 @@ func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (r
 	}
 
 	return responses.CreateAccountResponse{
-		AccountID: uint64(newAccount.ID),
+		AccountID: newAccount.ID,
 		CreatedAt: newAccount.CreatedAt,
 		Owner:     newAccount.Owner,
 		Balance:   newAccount.Balance,
@@ -59,7 +59,7 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (response
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
 		newEntry = models.Entries{
 			AccountID: req.AccountID,
-			Amount:    int64(req.Amount),
+			Amount:    req.Amount,
 		}
 
 		if err := tx.Create(&newEntry).Error; err != nil {
@@ -71,7 +71,7 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (response
 			return nil
 		}
 
-		account.Balance += uint64(req.Amount)
+		account.Balance += int64(req.Amount)
 		if err := tx.Save(account).Error; err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (response
 	}
 
 	return responses.EntryResponse{
-		EntryID:   uint64(newEntry.ID),
+		EntryID:   newEntry.ID,
 		AccountID: newEntry.AccountID,
 		Amount:    newEntry.Amount,
 		CreatedAt: newEntry.CreatedAt,
@@ -95,7 +95,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (respon
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
 		newEntry = models.Entries{
 			AccountID: req.AccountID,
-			Amount:    -1 * int64(req.Amount),
+			Amount:    -req.Amount,
 		}
 
 		if err := tx.Create(&newEntry).Error; err != nil {
@@ -107,7 +107,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (respon
 			return nil
 		}
 
-		account.Balance -= uint64(req.Amount)
+		account.Balance -= int64(req.Amount)
 		if err := tx.Save(account).Error; err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (respon
 	}
 
 	return responses.EntryResponse{
-		EntryID:   uint64(newEntry.ID),
+		EntryID:   newEntry.ID,
 		AccountID: newEntry.AccountID,
 		Amount:    newEntry.Amount,
 		CreatedAt: newEntry.CreatedAt,
@@ -146,8 +146,8 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 			}
 		}
 
-		srcAccount.Balance -= uint64(req.Amount)
-		dstAccount.Balance += uint64(req.Amount)
+		srcAccount.Balance -= int64(req.Amount)
+		dstAccount.Balance += int64(req.Amount)
 
 		if err := tx.Save(&srcAccount).Error; err != nil {
 			return err
@@ -158,11 +158,11 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 
 		FromEntry := models.Entries{
 			AccountID: req.FromAccountID,
-			Amount:    -1 * int64(req.Amount),
+			Amount:    -req.Amount,
 		}
 		ToEntry := models.Entries{
 			AccountID: req.ToAccountID,
-			Amount:    int64(req.Amount),
+			Amount:    req.Amount,
 		}
 		if err := tx.Create(&FromEntry).Error; err != nil {
 			return err
@@ -175,8 +175,8 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 			FromAccountID:   req.FromAccountID,
 			ToAccountID:     req.ToAccountID,
 			Amount:          req.Amount,
-			OutgoingEntryID: uint64(FromEntry.ID),
-			IncomingEntryID: uint64(ToEntry.ID),
+			OutgoingEntryID: FromEntry.ID,
+			IncomingEntryID: ToEntry.ID,
 		}
 
 		if err := tx.Create(&newTransfer).Error; err != nil {
@@ -189,11 +189,11 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 	}
 
 	return responses.TransferResponse{
-		TransferID:   uint64(newTransfer.ID),
+		TransferID:   newTransfer.ID,
 		SrcAccountID: newTransfer.FromAccountID,
 		DstAccountID: newTransfer.ToAccountID,
 		CreatedAt:    newTransfer.CreatedAt,
-		Amount:       uint32(int64(newTransfer.Amount)),
+		Amount:       newTransfer.Amount,
 	}, nil
 }
 
@@ -269,7 +269,7 @@ func (services *SQLServices) GetEntry(id uint64) (responses.EntryResponse, error
 	return entry, nil
 }
 
-func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID uint64) (models.Accounts, models.Accounts, error) {
+func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Accounts, models.Accounts, error) {
 	var lowerAccount, higherAccount models.Accounts
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&lowerAccount, lowerAccountID).Error; err != nil {
