@@ -16,8 +16,14 @@ droptestdb:
 migrateup:
 	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank?sslmode=disable" -verbose up
 
+migrateup1:
+	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank?sslmode=disable" -verbose up 1
+
 migratedown:
 	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank?sslmode=disable" -verbose down
+
+migratedown1:
+	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank?sslmode=disable" -verbose down 1
 
 testmigrateup:
 	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank_test?sslmode=disable" -verbose up
@@ -36,3 +42,4 @@ test:
 
 .PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, mock
 .PHONY: migratedown, migrateup, testmigratedown. testmigrateup, server
+.PHONY: migratedown1, migrateup1
