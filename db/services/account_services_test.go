@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func createRandomAccount(t *testing.T) responses.GetAccountResponse {
+func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 	testAccount := requests.CreateAccountRequest{
 		Owner:   util.RandomOwner(),
 		Balance: uint64(util.RandomInt(0, 9999)),
