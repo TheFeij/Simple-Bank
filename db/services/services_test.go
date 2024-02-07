@@ -64,7 +64,7 @@ func TestGetAccountsList(t *testing.T) {
 		createRandomAccount(t)
 	}
 
-	accounts, err := accountServices.ListAccounts(uint64(util.RandomInt(1, 2)), 5)
+	accounts, err := accountServices.ListAccounts(util.RandomInt(1, 2), 5)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
@@ -81,7 +81,7 @@ func TestTransfer(t *testing.T) {
 	account2 := createRandomAccount(t)
 
 	concurrentTransactions := 20
-	var amount uint32 = 10
+	var amount int32 = 10
 
 	errorsChan := make(chan error)
 	resultsChan := make(chan responses.TransferResponse)
@@ -148,7 +148,7 @@ func TestTransfer(t *testing.T) {
 		require.True(t, diff2 > 0)
 		require.True(t, diff1 > 0)
 		require.Equal(t, diff1, diff2)
-		require.Equal(t, uint64(amount), diff1/(uint64(i)+uint64(1)))
+		require.Equal(t, uint64(amount), diff1/(int64(i)+int64(1)))
 	}
 }
 
@@ -157,7 +157,7 @@ func TestTransferDeadLock(t *testing.T) {
 	account2 := createRandomAccount(t)
 
 	concurrentTransactions := 20
-	var amount uint32 = 10
+	var amount int32 = 10
 
 	errorsChan := make(chan error)
 	resultsChan := make(chan responses.TransferResponse)
