@@ -33,3 +33,7 @@ func RandomString(length int, alphabet string) string {
 
 	return randomString.String()
 }
+
+func RandomID() int64 {
+	return RandomInt(1, math.MaxInt64)
+}
