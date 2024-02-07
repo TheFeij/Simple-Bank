@@ -11,7 +11,7 @@ import (
 
 func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 	testAccount := requests.CreateAccountRequest{
-		Owner:   util.RandomOwner(),
+		Owner:   util.RandomString(int(util.RandomInt(1, 50))),
 		Balance: uint64(util.RandomInt(0, 9999)),
 	}
 
