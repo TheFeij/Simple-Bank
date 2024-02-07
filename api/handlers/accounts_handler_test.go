@@ -5,10 +5,13 @@ import (
 	mockdb "Simple-Bank/db/mock"
 	"Simple-Bank/responses"
 	"Simple-Bank/util"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -39,6 +42,7 @@ func TestGetAccountAPI(t *testing.T) {
 
 	server.RouterServeHTTP(recorder, req)
 	require.Equal(t, http.StatusOK, recorder.Code)
+	requireBodyMatchAccount(t, recorder.Body, account)
 }
 
 func randomAccount() responses.GetAccountResponse {
@@ -50,4 +54,14 @@ func randomAccount() responses.GetAccountResponse {
 		Owner:     util.RandomString(int(util.RandomInt(1, 50))),
 		Balance:   uint64(util.RandomInt(0, 9999)),
 	}
+}
+
+func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account responses.GetAccountResponse) {
+	data, err := ioutil.ReadAll(body)
+	require.NoError(t, err)
+
+	var response responses.GetAccountResponse
+	err = json.Unmarshal(data, &response)
+	require.NoError(t, err)
+	require.Equal(t, account, response)
 }
