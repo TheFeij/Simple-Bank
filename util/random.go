@@ -49,3 +49,15 @@ func RandomUsername() string {
 
 	return username
 }
+
+func RandomPassword() string {
+	password := RandomString(1, lowerCases)
+	password += RandomString(1, upperCases)
+	password += RandomString(1, numbers)
+	password += RandomString(1, specials)
+	password += RandomString(
+		int(RandomInt(4, 60)),
+		lowerCases+upperCases+numbers+numbers+specials)
+
+	return password
+}
