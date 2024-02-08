@@ -50,7 +50,7 @@ var ValidFullname validator.Func = func(fl validator.FieldLevel) bool {
 			return false
 		}
 
-		if match, _ := regexp.MatchString("^[a-zA-Z]+([\\\\s][a-zA-Z]+)*$", fullname); !match {
+		if match, _ := regexp.MatchString("^[a-zA-Z]+([\\s][a-zA-Z]+)*$", fullname); !match {
 			return false
 		}
 
