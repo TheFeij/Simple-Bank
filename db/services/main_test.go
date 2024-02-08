@@ -22,6 +22,7 @@ func TestMain(m *testing.M) {
 
 	exitCode := m.Run()
 
+	db.Exec("DELETE FROM users")
 	db.Exec("DELETE FROM accounts")
 	db.Exec("DELETE FROM entries")
 	db.Exec("DELETE FROM transfers")
