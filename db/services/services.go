@@ -291,7 +291,7 @@ func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (respons
 		FullName:  newUser.FullName,
 		CreatedAt: newUser.CreatedAt.Local().Truncate(time.Second),
 		UpdatedAt: newUser.UpdatedAt.Local().Truncate(time.Second),
-		DeletedAt: newUser.DeletedAt.Time.Local().Truncate(time.Second),
+		DeletedAt: newUser.DeletedAt.Time.Truncate(time.Second),
 	}, nil
 
 }
@@ -312,7 +312,13 @@ func (services *SQLServices) GetUser(username string) (responses.UserInformation
 		FullName:  user.FullName,
 		CreatedAt: user.CreatedAt.Local().Truncate(time.Second),
 		UpdatedAt: user.CreatedAt.Local().Truncate(time.Second),
-		DeletedAt: user.DeletedAt.Time.Local().Truncate(time.Second),
+	}
+
+	nullTime := gorm.DeletedAt{}
+	if user.DeletedAt != nullTime {
+		res.DeletedAt = user.DeletedAt.Time.Local().Truncate(time.Second)
+	} else {
+		res.DeletedAt = user.DeletedAt.Time.Truncate(time.Second)
 	}
 
 	return res, nil
