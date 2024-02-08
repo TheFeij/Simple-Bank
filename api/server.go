@@ -30,6 +30,8 @@ func NewServer(services services.Services) Server {
 	server.router.POST("/accounts", server.handlers.CreateAccount)
 	server.router.GET("/accounts/:id", server.handlers.GetAccount)
 	server.router.GET("/accounts", server.handlers.GetAccountsList)
+	server.router.POST("/users", server.handlers.CreateUser)
+	server.router.GET("/users/:username", server.handlers.GetUser)
 
 	return server
 }
