@@ -4,8 +4,9 @@ import (
 	"Simple-Bank/requests"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v5/pgconn"
 	"net/http"
 )
 
@@ -18,10 +19,16 @@ func (handler *Handler) CreateUser(context *gin.Context) {
 	}
 
 	res, err := handler.services.CreateUser(req)
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		context.JSON(http.StatusForbidden, errorResponse(err))
-		return
-	} else if err != nil {
+	if err != nil {
+		var pgError *pgconn.PgError
+		if errors.As(err, &pgError) {
+			fmt.Println(pgError.ConstraintName)
+			switch pgError.ConstraintName {
+			case "users_pkey", "users_email_key":
+				context.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
