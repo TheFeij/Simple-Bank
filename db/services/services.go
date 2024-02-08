@@ -278,6 +278,7 @@ func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (respons
 		FullName:       req.FullName,
 		CreatedAt:      time.Now().UTC(),
 		UpdatedAt:      time.Now().UTC(),
+		DeletedAt:      gorm.DeletedAt{},
 	}
 
 	if err := services.DB.Create(&newUser).Error; err != nil {
