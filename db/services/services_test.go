@@ -264,5 +264,5 @@ func TestGetUser(t *testing.T) {
 	require.Equal(t, user.CreatedAt, res.CreatedAt)
 	require.Equal(t, user.UpdatedAt, res.UpdatedAt)
 	require.Equal(t, user.DeletedAt, res.DeletedAt)
-	require.Zero(t, res.DeletedAt)
+	require.True(t, res.DeletedAt.IsZero())
 }
