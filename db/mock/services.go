@@ -55,6 +55,21 @@ func (mr *MockServicesMockRecorder) CreateAccount(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccount", reflect.TypeOf((*MockServices)(nil).CreateAccount), arg0)
 }
 
+// CreateUser mocks base method.
+func (m *MockServices) CreateUser(arg0 requests.CreateUserRequest) (responses.UserInformationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUser", arg0)
+	ret0, _ := ret[0].(responses.UserInformationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUser indicates an expected call of CreateUser.
+func (mr *MockServicesMockRecorder) CreateUser(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockServices)(nil).CreateUser), arg0)
+}
+
 // DeleteAccount mocks base method.
 func (m *MockServices) DeleteAccount(arg0 int64) (responses.GetAccountResponse, error) {
 	m.ctrl.T.Helper()
@@ -128,6 +143,21 @@ func (m *MockServices) GetTransfer(arg0 int64) (responses.TransferResponse, erro
 func (mr *MockServicesMockRecorder) GetTransfer(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransfer", reflect.TypeOf((*MockServices)(nil).GetTransfer), arg0)
+}
+
+// GetUser mocks base method.
+func (m *MockServices) GetUser(arg0 string) (responses.UserInformationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUser", arg0)
+	ret0, _ := ret[0].(responses.UserInformationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUser indicates an expected call of GetUser.
+func (mr *MockServicesMockRecorder) GetUser(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockServices)(nil).GetUser), arg0)
 }
 
 // ListAccounts mocks base method.
