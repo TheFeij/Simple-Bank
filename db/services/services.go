@@ -4,6 +4,7 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
+	"Simple-Bank/util"
 	"database/sql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -271,11 +272,16 @@ func (services *SQLServices) GetEntry(id int64) (responses.EntryResponse, error)
 }
 
 func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (responses.UserInformationResponse, error) {
+	hashedPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		return responses.UserInformationResponse{}, err
+	}
+
 	newUser := models.User{
 		Username:       req.Username,
-		HashedPassword: "TODO",
 		Email:          req.Email,
 		FullName:       req.FullName,
+		HashedPassword: hashedPassword,
 		CreatedAt:      time.Now().UTC(),
 		UpdatedAt:      time.Now().UTC(),
 		DeletedAt:      gorm.DeletedAt{},
