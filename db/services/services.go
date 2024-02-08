@@ -295,6 +295,28 @@ func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (respons
 
 }
 
+func (services *SQLServices) GetUser(username string) (responses.UserInformationResponse, error) {
+	var user models.User
+	var res responses.UserInformationResponse
+
+	if err := services.DB.
+		Raw("SELECT * FROM users WHERE username = ?", username).
+		Scan(&user).Error; err != nil {
+		return res, err
+	}
+
+	res = responses.UserInformationResponse{
+		Username:  user.Username,
+		Email:     user.Email,
+		FullName:  user.FullName,
+		CreatedAt: user.CreatedAt.Local().Truncate(time.Second),
+		UpdatedAt: user.CreatedAt.Local().Truncate(time.Second),
+		DeletedAt: user.DeletedAt.Time.Local().Truncate(time.Second),
+	}
+
+	return res, nil
+}
+
 func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Accounts, models.Accounts, error) {
 	var lowerAccount, higherAccount models.Accounts
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
