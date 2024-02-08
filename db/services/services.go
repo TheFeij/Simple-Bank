@@ -314,11 +314,10 @@ func (services *SQLServices) GetUser(username string) (responses.UserInformation
 		UpdatedAt: user.CreatedAt.Local().Truncate(time.Second),
 	}
 
-	nullTime := gorm.DeletedAt{}
-	if user.DeletedAt != nullTime {
-		res.DeletedAt = user.DeletedAt.Time.Local().Truncate(time.Second)
-	} else {
+	if user.DeletedAt.Time.IsZero() {
 		res.DeletedAt = user.DeletedAt.Time.Truncate(time.Second)
+	} else {
+		res.DeletedAt = user.DeletedAt.Time.Local().Truncate(time.Second)
 	}
 
 	return res, nil
