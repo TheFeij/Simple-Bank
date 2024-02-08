@@ -28,8 +28,14 @@ migratedown1:
 testmigrateup:
 	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank_test?sslmode=disable" -verbose up
 
+testmigrateup1:
+	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank_test?sslmode=disable" -verbose up 1
+
 testmigratedown:
 	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank_test?sslmode=disable" -verbose down
+
+testmigratedown1:
+	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank_test?sslmode=disable" -verbose down 1
 
 mock:
 	mockgen -package mockdb -destination db/mock/services.go Simple-Bank/db/services Services
@@ -42,4 +48,4 @@ test:
 
 .PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, mock
 .PHONY: migratedown, migrateup, testmigratedown. testmigrateup, server
-.PHONY: migratedown1, migrateup1
+.PHONY: migratedown1, migrateup1, testmigrateup1, testmigratedown1
