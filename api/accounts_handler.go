@@ -64,3 +64,20 @@ func (handler *Handler) GetAccountsList(context *gin.Context) {
 
 	context.JSON(http.StatusOK, res)
 }
+
+func (handler *Handler) CreateUser(context *gin.Context) {
+	var req requests.CreateUserRequest
+
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	res, err := handler.services.CreateUser(req)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	context.JSON(http.StatusOK, res)
+}
