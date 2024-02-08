@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"time"
 )
 
 type SQLServices struct {
@@ -267,6 +268,31 @@ func (services *SQLServices) GetEntry(id int64) (responses.EntryResponse, error)
 	}
 
 	return entry, nil
+}
+
+func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (responses.UserInformationResponse, error) {
+	newUser := models.User{
+		Username:       req.Username,
+		HashedPassword: "TODO",
+		Email:          req.Email,
+		FullName:       req.FullName,
+		CreatedAt:      time.Now().UTC(),
+		UpdatedAt:      time.Now().UTC(),
+	}
+
+	if err := services.DB.Create(&newUser).Error; err != nil {
+		return responses.UserInformationResponse{}, nil
+	}
+
+	return responses.UserInformationResponse{
+		Username:  newUser.Username,
+		Email:     newUser.Email,
+		FullName:  newUser.FullName,
+		CreatedAt: newUser.CreatedAt.Local().Truncate(time.Second),
+		UpdatedAt: newUser.UpdatedAt.Local().Truncate(time.Second),
+		DeletedAt: newUser.DeletedAt.Time.Local().Truncate(time.Second),
+	}, nil
+
 }
 
 func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Accounts, models.Accounts, error) {
