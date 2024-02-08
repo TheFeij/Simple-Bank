@@ -15,7 +15,7 @@ func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
 		Balance: util.RandomBalance(),
 	}
 
-	account, err := accountServices.CreateAccount(testAccount)
+	account, err := services.CreateAccount(testAccount)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
@@ -35,7 +35,7 @@ func TestCreateAccount(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	account := createRandomAccount(t)
 
-	response, err := accountServices.GetAccount(account.AccountID)
+	response, err := services.GetAccount(account.AccountID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
@@ -49,11 +49,11 @@ func TestGetAccount(t *testing.T) {
 
 func TestDeleteAccount(t *testing.T) {
 	account := createRandomAccount(t)
-	response, err := accountServices.DeleteAccount(account.AccountID)
+	response, err := services.DeleteAccount(account.AccountID)
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
 
-	response, err = accountServices.GetAccount(account.AccountID)
+	response, err = services.GetAccount(account.AccountID)
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
 	require.NotZero(t, response.DeletedAt)
@@ -64,7 +64,7 @@ func TestGetAccountsList(t *testing.T) {
 		createRandomAccount(t)
 	}
 
-	accounts, err := accountServices.ListAccounts(util.RandomInt(1, 2), 5)
+	accounts, err := services.ListAccounts(util.RandomInt(1, 2), 5)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
@@ -93,7 +93,7 @@ func TestTransfer(t *testing.T) {
 				FromAccountID: account1.AccountID,
 				ToAccountID:   account2.AccountID,
 			}
-			transfer, err := accountServices.Transfer(transferRequest)
+			transfer, err := services.Transfer(transferRequest)
 
 			errorsChan <- err
 			resultsChan <- transfer
@@ -113,11 +113,11 @@ func TestTransfer(t *testing.T) {
 		require.NotZero(t, transfer.TransferID)
 
 		var result responses.TransferResponse
-		result, err = accountServices.GetTransfer(transfer.TransferID)
+		result, err = services.GetTransfer(transfer.TransferID)
 		require.NoError(t, err)
 
 		var fromEntry responses.EntryResponse
-		fromEntry, err = accountServices.GetEntry(result.OutgoingEntryID)
+		fromEntry, err = services.GetEntry(result.OutgoingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, fromEntry)
 		require.Equal(t, account1.AccountID, fromEntry.AccountID)
@@ -126,7 +126,7 @@ func TestTransfer(t *testing.T) {
 		require.NotZero(t, fromEntry.CreatedAt)
 
 		var toEntry responses.EntryResponse
-		toEntry, err = accountServices.GetEntry(result.IncomingEntryID)
+		toEntry, err = services.GetEntry(result.IncomingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, toEntry)
 		require.Equal(t, account2.AccountID, toEntry.AccountID)
@@ -134,11 +134,11 @@ func TestTransfer(t *testing.T) {
 		require.NotZero(t, toEntry.EntryID)
 		require.NotZero(t, toEntry.CreatedAt)
 
-		fromAccount, err := accountServices.GetAccount(account1.AccountID)
+		fromAccount, err := services.GetAccount(account1.AccountID)
 		require.Equal(t, account1.AccountID, fromAccount.AccountID)
 		require.NoError(t, err)
 
-		toAccount, err := accountServices.GetAccount(account2.AccountID)
+		toAccount, err := services.GetAccount(account2.AccountID)
 		require.Equal(t, account2.AccountID, toAccount.AccountID)
 		require.NoError(t, err)
 
@@ -174,7 +174,7 @@ func TestTransferDeadLock(t *testing.T) {
 				FromAccountID: fromAccountID,
 				ToAccountID:   toAccountID,
 			}
-			transfer, err := accountServices.Transfer(transferRequest)
+			transfer, err := services.Transfer(transferRequest)
 			errorsChan <- err
 			resultsChan <- transfer
 		}(resultsChan, errorsChan, reverse)
@@ -188,35 +188,35 @@ func TestTransferDeadLock(t *testing.T) {
 		require.NotEmpty(t, transfer)
 
 		var result responses.TransferResponse
-		result, err = accountServices.GetTransfer(transfer.TransferID)
+		result, err = services.GetTransfer(transfer.TransferID)
 		require.NoError(t, err)
 		require.NotEmpty(t, result)
 
 		var fromEntry responses.EntryResponse
-		fromEntry, err = accountServices.GetEntry(result.OutgoingEntryID)
+		fromEntry, err = services.GetEntry(result.OutgoingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, fromEntry)
 
 		var toEntry responses.EntryResponse
-		toEntry, err = accountServices.GetEntry(result.IncomingEntryID)
+		toEntry, err = services.GetEntry(result.IncomingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, toEntry)
 
-		fromAccount, err := accountServices.GetAccount(result.SrcAccountID)
+		fromAccount, err := services.GetAccount(result.SrcAccountID)
 		require.NotEmpty(t, fromAccount)
 		require.NoError(t, err)
 
-		toAccount, err := accountServices.GetAccount(result.DstAccountID)
+		toAccount, err := services.GetAccount(result.DstAccountID)
 		require.NotEmpty(t, toAccount)
 		require.NoError(t, err)
 	}
 
-	account1After, err := accountServices.GetAccount(account1.AccountID)
+	account1After, err := services.GetAccount(account1.AccountID)
 	require.NotEmpty(t, account1)
 	require.NoError(t, err)
 	require.Equal(t, account1.Balance, account1After.Balance)
 
-	account2After, err := accountServices.GetAccount(account2.AccountID)
+	account2After, err := services.GetAccount(account2.AccountID)
 	require.NotEmpty(t, account2)
 	require.NoError(t, err)
 	require.Equal(t, account2.Balance, account2After.Balance)
@@ -233,7 +233,7 @@ func createRandomUser(t *testing.T) responses.UserInformationResponse {
 
 	createdTime := time.Now().Truncate(time.Nanosecond).Local()
 
-	user, err := accountServices.CreateUser(testUser)
+	user, err := services.CreateUser(testUser)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
@@ -254,7 +254,7 @@ func TestCreateUser(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	user := createRandomUser(t)
 
-	res, err := accountServices.GetUser(user.Username)
+	res, err := services.GetUser(user.Username)
 	require.NoError(t, err)
 	require.NotEmpty(t, res)
 
