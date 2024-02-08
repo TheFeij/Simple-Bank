@@ -78,3 +78,11 @@ func RandomFullname() string {
 
 	return fullname
 }
+
+func RandomEmail() string {
+	username := RandomUsername()
+	domain := RandomString(int(RandomInt(5, 10)), lowerCases+upperCases)
+	tld := RandomString(int(RandomInt(2, 5)), lowerCases)
+
+	return username + "@" + domain + "." + tld
+}
