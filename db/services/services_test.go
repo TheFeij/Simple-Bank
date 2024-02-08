@@ -222,3 +222,31 @@ func TestTransferDeadLock(t *testing.T) {
 	require.Equal(t, account2.Balance, account2After.Balance)
 
 }
+
+func createRandomUser(t *testing.T) responses.UserInformationResponse {
+	testUser := requests.CreateUserRequest{
+		Username: util.RandomUsername(),
+		Email:    util.RandomEmail(),
+		FullName: util.RandomFullname(),
+		Password: util.RandomPassword(),
+	}
+
+	createdTime := time.Now().Truncate(time.Nanosecond).Local()
+
+	user, err := accountServices.CreateUser(testUser)
+	require.NoError(t, err)
+	require.NotEmpty(t, user)
+
+	require.Equal(t, testUser.Username, user.Username)
+	require.Equal(t, testUser.Email, user.Email)
+	//TODO check passwords
+	require.Equal(t, testUser.FullName, user.FullName)
+	require.WithinDuration(t, createdTime, user.CreatedAt, time.Second)
+	require.WithinDuration(t, createdTime, user.UpdatedAt, time.Second)
+
+	return user
+}
+
+func TestCreateUser(t *testing.T) {
+	createRandomUser(t)
+}
