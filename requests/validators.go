@@ -23,7 +23,7 @@ var ValidPassword validator.Func = func(fl validator.FieldLevel) bool {
 			return false
 		}
 
-		if match, _ := regexp.MatchString("^[a-zA-Z0-9_!@#$%&*^]*$", password); !match {
+		if match, _ := regexp.MatchString("^[a-zA-Z0-9_!@#$%&*^.]*$", password); !match {
 			return false
 		}
 		if match, _ := regexp.MatchString("^.*[a-z].*$", password); !match {
@@ -35,7 +35,7 @@ var ValidPassword validator.Func = func(fl validator.FieldLevel) bool {
 		if match, _ := regexp.MatchString("^.*[0-9].*$", password); !match {
 			return false
 		}
-		if match, _ := regexp.MatchString("^.*[_!@#$%&*^].*$", password); !match {
+		if match, _ := regexp.MatchString("^.*[_!@#$%&*^.].*$", password); !match {
 			return false
 		}
 
