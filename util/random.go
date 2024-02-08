@@ -62,7 +62,7 @@ func RandomPassword() string {
 	return password
 }
 func RandomBalance() int64 {
-	return RandomInt(0, math.MaxInt64)
+	return RandomInt(0, math.MaxInt64-1)
 }
 func RandomAmount() int32 {
 	return int32(RandomInt(0, math.MinInt32))
