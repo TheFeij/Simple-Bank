@@ -282,7 +282,7 @@ func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (respons
 	}
 
 	if err := services.DB.Create(&newUser).Error; err != nil {
-		return responses.UserInformationResponse{}, nil
+		return responses.UserInformationResponse{}, err
 	}
 
 	return responses.UserInformationResponse{
