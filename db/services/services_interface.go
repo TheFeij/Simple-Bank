@@ -15,6 +15,8 @@ type Services interface {
 	GetAccount(id int64) (responses.GetAccountResponse, error)
 	GetTransfer(id int64) (responses.TransferResponse, error)
 	GetEntry(id int64) (responses.EntryResponse, error)
+	GetUser(username string) (responses.UserInformationResponse, error)
+	CreateUser(req requests.CreateUserRequest) (responses.UserInformationResponse, error)
 }
 
 var _ Services = (*SQLServices)(nil)
