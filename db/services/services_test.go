@@ -250,3 +250,19 @@ func createRandomUser(t *testing.T) responses.UserInformationResponse {
 func TestCreateUser(t *testing.T) {
 	createRandomUser(t)
 }
+
+func TestGetUser(t *testing.T) {
+	user := createRandomUser(t)
+
+	res, err := accountServices.GetUser(user.Username)
+	require.NoError(t, err)
+	require.NotEmpty(t, res)
+
+	require.Equal(t, user.Username, res.Username)
+	require.Equal(t, user.FullName, res.FullName)
+	require.Equal(t, user.Email, res.Email)
+	require.Equal(t, user.CreatedAt, res.CreatedAt)
+	require.Equal(t, user.UpdatedAt, res.UpdatedAt)
+	require.Equal(t, user.DeletedAt, res.DeletedAt)
+	require.Zero(t, res.DeletedAt.UTC())
+}
