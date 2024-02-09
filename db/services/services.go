@@ -22,7 +22,7 @@ func NewSQLServices(db *gorm.DB) Services {
 }
 
 func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
-	newAccount := models.Accounts{
+	newAccount := models.Account{
 		Owner:   req.Owner,
 		Balance: req.Balance,
 	}
@@ -48,7 +48,7 @@ func (services *SQLServices) DeleteAccount(id int64) (responses.GetAccountRespon
 		return responses.GetAccountResponse{}, err
 	}
 
-	if err := services.DB.Delete(&models.Accounts{}, id).Error; err != nil {
+	if err := services.DB.Delete(&models.Account{}, id).Error; err != nil {
 		return responses.GetAccountResponse{}, err
 	}
 
@@ -68,7 +68,7 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (response
 			return err
 		}
 
-		var account models.Accounts
+		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
 			return nil
 		}
@@ -104,7 +104,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (respon
 			return err
 		}
 
-		var account models.Accounts
+		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
 			return nil
 		}
@@ -131,7 +131,7 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 	var newTransfer models.Transfers
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
-		var srcAccount, dstAccount models.Accounts
+		var srcAccount, dstAccount models.Account
 
 		// always acquire the lock of the account with the lower account id
 		if req.FromAccountID < req.ToAccountID {
@@ -223,7 +223,7 @@ func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) (resp
 	return accountsList, nil
 }
 
-func (services *SQLServices) GetAccount(id int64) (responses.GetAccountResponse, error) {
+func (services *SQLServices) GetAccount(id int64) (models.Account, error) {
 	var accountResponse responses.GetAccountResponse
 
 	res := services.DB.
@@ -295,8 +295,8 @@ func (services *SQLServices) GetUser(username string) (models.User, error) {
 	return user, nil
 }
 
-func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Accounts, models.Accounts, error) {
-	var lowerAccount, higherAccount models.Accounts
+func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Account, models.Account, error) {
+	var lowerAccount, higherAccount models.Account
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&lowerAccount, lowerAccountID).Error; err != nil {
 		return lowerAccount, higherAccount, err

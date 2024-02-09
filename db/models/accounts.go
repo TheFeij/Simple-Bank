@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Accounts struct {
+type Account struct {
 	ID        int64          `gorm:"column:id"`
 	Owner     string         `gorm:"column:owner"`
 	Balance   int64          `gorm:"column:balance"`

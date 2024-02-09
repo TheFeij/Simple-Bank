@@ -6,15 +6,15 @@ import (
 )
 
 func Seed(db *gorm.DB) {
-	account1 := models.Accounts{
+	account1 := models.Account{
 		Owner:   "Abolfazl Moradi Feijani",
 		Balance: 3000,
 	}
-	account2 := models.Accounts{
+	account2 := models.Account{
 		Owner:   "Ali Mohammadi",
 		Balance: 1000,
 	}
-	account3 := models.Accounts{
+	account3 := models.Account{
 		Owner:   "Ahmad Babaee",
 		Balance: 5000,
 	}
