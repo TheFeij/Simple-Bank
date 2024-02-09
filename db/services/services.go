@@ -240,20 +240,11 @@ func (services *SQLServices) GetAccount(id int64) (responses.GetAccountResponse,
 	return accountResponse, nil
 }
 
-func (services *SQLServices) GetTransfer(id int64) (responses.TransferResponse, error) {
-	var transfer responses.TransferResponse
+func (services *SQLServices) GetTransfer(id int64) (models.Transfers, error) {
+	var transfer models.Transfers
 
-	if err := services.DB.
-		Raw("SELECT id AS transfer_id,"+
-			" to_account_id AS src_account_id,"+
-			" from_account_id AS dst_account_id,"+
-			" incoming_entry_id,"+
-			" outgoing_entry_id,"+
-			" created_at,"+
-			" amount"+
-			" FROM transfers WHERE id = ?", id).
-		Scan(&transfer).Error; err != nil {
-		return responses.TransferResponse{}, err
+	if err := services.DB.First(&transfer, id).Error; err != nil {
+		return transfer, err
 	}
 
 	return transfer, nil
