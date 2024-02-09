@@ -1,6 +1,7 @@
 package services
 
 import (
+	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/util"
@@ -225,8 +226,8 @@ func TestTransferDeadLock(t *testing.T) {
 
 }
 
-func createRandomUser(t *testing.T) responses.UserInformationResponse {
-	testUser := requests.CreateUserRequest{
+func createRandomUser(t *testing.T) models.User {
+	createUserRequest := requests.CreateUserRequest{
 		Username: util.RandomUsername(),
 		Email:    util.RandomEmail(),
 		FullName: util.RandomFullname(),
@@ -235,14 +236,14 @@ func createRandomUser(t *testing.T) responses.UserInformationResponse {
 
 	createdTime := time.Now().Truncate(time.Nanosecond).Local()
 
-	user, err := services.CreateUser(testUser)
+	user, err := services.CreateUser(createUserRequest)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
-	require.Equal(t, testUser.Username, user.Username)
-	require.Equal(t, testUser.Email, user.Email)
-	//TODO check passwords
-	require.Equal(t, testUser.FullName, user.FullName)
+	require.Equal(t, createUserRequest.Username, user.Username)
+	require.Equal(t, createUserRequest.Email, user.Email)
+	require.NoError(t, util.CheckPassword(createUserRequest.Password, user.HashedPassword))
+	require.Equal(t, createUserRequest.FullName, user.FullName)
 	require.WithinDuration(t, createdTime, user.CreatedAt, time.Second)
 	require.WithinDuration(t, createdTime, user.UpdatedAt, time.Second)
 
@@ -263,8 +264,9 @@ func TestGetUser(t *testing.T) {
 	require.Equal(t, user.Username, res.Username)
 	require.Equal(t, user.FullName, res.FullName)
 	require.Equal(t, user.Email, res.Email)
-	require.Equal(t, user.CreatedAt, res.CreatedAt)
-	require.Equal(t, user.UpdatedAt, res.UpdatedAt)
+	require.Equal(t, user.HashedPassword, res.HashedPassword)
+	require.WithinDuration(t, user.CreatedAt, res.CreatedAt, time.Millisecond)
+	require.WithinDuration(t, user.UpdatedAt, res.UpdatedAt, time.Millisecond)
 	require.Equal(t, user.DeletedAt, res.DeletedAt)
-	require.True(t, res.DeletedAt.IsZero())
+	require.True(t, res.DeletedAt.Time.IsZero())
 }
