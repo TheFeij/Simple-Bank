@@ -74,7 +74,7 @@ func (handler *Handler) GetAccountsList(context *gin.Context) {
 		return
 	}
 
-	res, err := handler.services.ListAccounts(req.PageID, req.PageSize)
+	accounts, err := handler.services.ListAccounts(req.PageID, req.PageSize)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
@@ -84,5 +84,23 @@ func (handler *Handler) GetAccountsList(context *gin.Context) {
 		return
 	}
 
+	res := responses.ListAccountsResponse{}
+	for i := range accounts {
+		account := responses.GetAccountResponse{
+			AccountID: accounts[i].ID,
+			Owner:     accounts[i].Owner,
+			Balance:   accounts[i].Balance,
+			CreatedAt: accounts[i].CreatedAt.Truncate(time.Second).Local(),
+			UpdatedAt: accounts[i].UpdatedAt.Truncate(time.Second).Local(),
+		}
+
+		res.Accounts = append(res.Accounts, account)
+
+		if accounts[i].DeletedAt.Time.IsZero() {
+			res.Accounts[i].DeletedAt = accounts[i].DeletedAt.Time.Truncate(time.Second)
+		} else {
+			res.Accounts[i].DeletedAt = accounts[i].DeletedAt.Time.Local().Truncate(time.Second)
+		}
+	}
 	context.JSON(http.StatusOK, res)
 }
