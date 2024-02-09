@@ -3,7 +3,6 @@ package services
 import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
-	"Simple-Bank/responses"
 	"Simple-Bank/util"
 	"database/sql"
 	"gorm.io/gorm"
@@ -21,22 +20,17 @@ func NewSQLServices(db *gorm.DB) Services {
 	}
 }
 
-func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
+func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (models.Account, error) {
 	newAccount := models.Account{
 		Owner:   req.Owner,
 		Balance: req.Balance,
 	}
 
 	if err := services.DB.Create(&newAccount).Error; err != nil {
-		return responses.CreateAccountResponse{}, err
+		return newAccount, err
 	}
 
-	return responses.CreateAccountResponse{
-		AccountID: newAccount.ID,
-		CreatedAt: newAccount.CreatedAt,
-		Owner:     newAccount.Owner,
-		Balance:   newAccount.Balance,
-	}, nil
+	return newAccount, nil
 }
 
 func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
