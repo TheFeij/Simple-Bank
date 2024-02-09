@@ -39,17 +39,17 @@ func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (r
 	}, nil
 }
 
-func (services *SQLServices) DeleteAccount(id int64) (responses.GetAccountResponse, error) {
-	var deletedAccount responses.GetAccountResponse
+func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
+	var deletedAccount models.Account
 
 	if err := services.DB.
-		Raw("SELECT id AS account_id, created_at, updated_at, deleted_at, owner, balance FROM accounts WHERE id = ?", id).
+		Raw("SELECT * FROM accounts WHERE id = ?", id).
 		Scan(&deletedAccount).Error; err != nil {
-		return responses.GetAccountResponse{}, err
+		return deletedAccount, err
 	}
 
 	if err := services.DB.Delete(&models.Account{}, id).Error; err != nil {
-		return responses.GetAccountResponse{}, err
+		return deletedAccount, err
 	}
 
 	return deletedAccount, nil
