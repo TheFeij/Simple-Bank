@@ -20,7 +20,7 @@ func (handler *Handler) CreateUser(context *gin.Context) {
 		return
 	}
 
-	res, err := handler.services.CreateUser(req)
+	newUser, err := handler.services.CreateUser(req)
 	if err != nil {
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) {
@@ -33,6 +33,15 @@ func (handler *Handler) CreateUser(context *gin.Context) {
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+
+	res := responses.UserInformationResponse{
+		Username:  newUser.Username,
+		Email:     newUser.Email,
+		FullName:  newUser.FullName,
+		CreatedAt: newUser.CreatedAt.Local().Truncate(time.Second),
+		UpdatedAt: newUser.UpdatedAt.Local().Truncate(time.Second),
+		DeletedAt: newUser.DeletedAt.Time.Truncate(time.Second),
 	}
 
 	context.JSON(http.StatusOK, res)
