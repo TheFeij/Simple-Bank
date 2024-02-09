@@ -259,13 +259,11 @@ func (services *SQLServices) GetTransfer(id int64) (responses.TransferResponse, 
 	return transfer, nil
 }
 
-func (services *SQLServices) GetEntry(id int64) (responses.EntryResponse, error) {
-	var entry responses.EntryResponse
+func (services *SQLServices) GetEntry(id int64) (models.Entries, error) {
+	var entry models.Entries
 
-	if err := services.DB.
-		Raw("SELECT id AS entry_id, account_id, created_at, amount FROM entries WHERE id = ?", id).
-		Scan(&entry).Error; err != nil {
-		return responses.EntryResponse{}, err
+	if err := services.DB.First(&entry, id).Error; err != nil {
+		return entry, err
 	}
 
 	return entry, nil
