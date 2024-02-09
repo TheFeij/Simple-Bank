@@ -40,7 +40,7 @@ func (handler *Handler) GetAccount(context *gin.Context) {
 		return
 	}
 
-	res, err := handler.services.GetAccount(req.ID)
+	account, err := handler.services.GetAccount(req.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
@@ -48,6 +48,20 @@ func (handler *Handler) GetAccount(context *gin.Context) {
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+
+	res := responses.GetAccountResponse{
+		AccountID: account.ID,
+		Owner:     account.Owner,
+		Balance:   account.Balance,
+		CreatedAt: account.CreatedAt.Truncate(time.Second).Local(),
+		UpdatedAt: account.UpdatedAt.Truncate(time.Second).Local(),
+	}
+
+	if account.DeletedAt.Time.IsZero() {
+		res.DeletedAt = account.DeletedAt.Time.Truncate(time.Second)
+	} else {
+		res.DeletedAt = account.DeletedAt.Time.Local().Truncate(time.Second)
 	}
 
 	context.JSON(http.StatusOK, res)
