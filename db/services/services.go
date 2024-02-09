@@ -224,20 +224,18 @@ func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) (resp
 }
 
 func (services *SQLServices) GetAccount(id int64) (models.Account, error) {
-	var accountResponse responses.GetAccountResponse
+	var account models.Account
 
-	res := services.DB.
-		Raw("SELECT id AS account_id, created_at, updated_at, deleted_at, owner, balance FROM accounts WHERE id = ?", id).
-		Scan(&accountResponse)
+	res := services.DB.First(&account, id)
 
 	if res.RowsAffected == 0 {
-		return accountResponse, sql.ErrNoRows
+		return account, sql.ErrNoRows
 	}
 	if res.Error != nil {
-		return accountResponse, res.Error
+		return account, res.Error
 	}
 
-	return accountResponse, nil
+	return account, nil
 }
 
 func (services *SQLServices) GetTransfer(id int64) (models.Transfer, error) {
