@@ -3,30 +3,32 @@ package services
 import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
-	"Simple-Bank/responses"
 	"Simple-Bank/util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
 
-func createRandomAccount(t *testing.T) responses.CreateAccountResponse {
+func createRandomAccount(t *testing.T) models.Account {
 	user := createRandomUser(t)
 
-	testAccount := requests.CreateAccountRequest{
+	createAccountRequest := requests.CreateAccountRequest{
 		Owner:   user.Username,
 		Balance: util.RandomBalance(),
 	}
 
-	account, err := services.CreateAccount(testAccount)
+	createdTime := time.Now().Truncate(time.Nanosecond).Local()
+
+	account, err := services.CreateAccount(createAccountRequest)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
-	require.Equal(t, testAccount.Owner, account.Owner)
-	require.Equal(t, testAccount.Balance, account.Balance)
-
-	require.NotZero(t, account.AccountID)
-	require.NotZero(t, account.CreatedAt)
+	require.Equal(t, createAccountRequest.Owner, account.Owner)
+	require.Equal(t, createAccountRequest.Balance, account.Balance)
+	require.True(t, account.ID > 0)
+	require.WithinDuration(t, createdTime, account.CreatedAt, time.Second)
+	require.WithinDuration(t, createdTime, account.UpdatedAt, time.Second)
+	require.True(t, account.DeletedAt.Time.IsZero())
 
 	return account
 }
@@ -38,28 +40,37 @@ func TestCreateAccount(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	account := createRandomAccount(t)
 
-	response, err := services.GetAccount(account.AccountID)
+	response, err := services.GetAccount(account.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
 
-	require.Equal(t, account.AccountID, response.AccountID)
+	require.Equal(t, account.ID, response.ID)
 	require.Equal(t, account.Balance, response.Balance)
 	require.Equal(t, account.Owner, response.Owner)
 	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
-	require.Zero(t, response.DeletedAt)
+	require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
+	require.Equal(t, account.DeletedAt, response.DeletedAt)
+	require.True(t, response.DeletedAt.Time.IsZero())
 }
 
 func TestDeleteAccount(t *testing.T) {
 	account := createRandomAccount(t)
-	response, err := services.DeleteAccount(account.AccountID)
+	response, err := services.DeleteAccount(account.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
+	require.Equal(t, account.ID, response.ID)
+	require.Equal(t, account.Balance, response.Balance)
+	require.Equal(t, account.Owner, response.Owner)
+	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+	require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
+	require.NotEqual(t, account.DeletedAt, response.DeletedAt)
+	require.False(t, response.DeletedAt.Time.IsZero())
 
-	response, err = services.GetAccount(account.AccountID)
+	response, err = services.GetAccount(account.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
-	require.NotZero(t, response.DeletedAt)
+	require.False(t, response.DeletedAt.Time.IsZero())
 }
 
 func TestGetAccountsList(t *testing.T) {
@@ -71,10 +82,9 @@ func TestGetAccountsList(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
-	require.NotEmpty(t, accounts.Accounts)
-	require.Len(t, accounts.Accounts, 5)
+	require.Len(t, accounts, 5)
 
-	for _, account := range accounts.Accounts {
+	for _, account := range accounts {
 		require.NotEmpty(t, account)
 	}
 }
@@ -87,14 +97,14 @@ func TestTransfer(t *testing.T) {
 	var amount int32 = 10
 
 	errorsChan := make(chan error)
-	resultsChan := make(chan responses.TransferResponse)
+	resultsChan := make(chan models.Transfer)
 
 	for i := 0; i < concurrentTransactions; i++ {
-		go func(chan responses.TransferResponse, chan error) {
+		go func(chan models.Transfer, chan error) {
 			transferRequest := requests.TransferRequest{
 				Amount:        amount,
-				FromAccountID: account1.AccountID,
-				ToAccountID:   account2.AccountID,
+				FromAccountID: account1.ID,
+				ToAccountID:   account2.ID,
 			}
 			transfer, err := services.Transfer(transferRequest)
 
@@ -110,48 +120,48 @@ func TestTransfer(t *testing.T) {
 		transfer := <-resultsChan
 		require.NotEmpty(t, transfer)
 		require.Equal(t, amount, transfer.Amount)
-		require.Equal(t, account1.AccountID, transfer.SrcAccountID)
-		require.Equal(t, account2.AccountID, transfer.DstAccountID)
+		require.Equal(t, account1.ID, transfer.FromAccountID)
+		require.Equal(t, account2.ID, transfer.ToAccountID)
 		require.NotZero(t, transfer.CreatedAt)
-		require.NotZero(t, transfer.TransferID)
+		require.NotZero(t, transfer.ID)
 
-		var result responses.TransferResponse
-		result, err = services.GetTransfer(transfer.TransferID)
+		var result models.Transfer
+		result, err = services.GetTransfer(transfer.ID)
 		require.NoError(t, err)
 
-		var fromEntry responses.EntryResponse
+		var fromEntry models.Entry
 		fromEntry, err = services.GetEntry(result.OutgoingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, fromEntry)
-		require.Equal(t, account1.AccountID, fromEntry.AccountID)
-		require.Equal(t, amount, uint32(-fromEntry.Amount))
-		require.NotZero(t, fromEntry.EntryID)
+		require.Equal(t, account1.ID, fromEntry.AccountID)
+		require.Equal(t, amount, -fromEntry.Amount)
+		require.NotZero(t, fromEntry.ID)
 		require.NotZero(t, fromEntry.CreatedAt)
 
-		var toEntry responses.EntryResponse
+		var toEntry models.Entry
 		toEntry, err = services.GetEntry(result.IncomingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, toEntry)
-		require.Equal(t, account2.AccountID, toEntry.AccountID)
-		require.Equal(t, amount, uint32(toEntry.Amount))
-		require.NotZero(t, toEntry.EntryID)
+		require.Equal(t, account2.ID, toEntry.AccountID)
+		require.Equal(t, amount, toEntry.Amount)
+		require.NotZero(t, toEntry.ID)
 		require.NotZero(t, toEntry.CreatedAt)
 
-		fromAccount, err := services.GetAccount(account1.AccountID)
-		require.Equal(t, account1.AccountID, fromAccount.AccountID)
+		fromAccount, err := services.GetAccount(account1.ID)
+		require.Equal(t, account1.ID, fromAccount.ID)
 		require.NoError(t, err)
 
-		toAccount, err := services.GetAccount(account2.AccountID)
-		require.Equal(t, account2.AccountID, toAccount.AccountID)
+		toAccount, err := services.GetAccount(account2.ID)
+		require.Equal(t, account2.ID, toAccount.ID)
 		require.NoError(t, err)
 
-		var diff1 = account1.Balance - fromAccount.Balance
-		var diff2 = toAccount.Balance - account2.Balance
+		var diff1 = int32(account1.Balance - fromAccount.Balance)
+		var diff2 = int32(toAccount.Balance - account2.Balance)
 
 		require.True(t, diff2 > 0)
 		require.True(t, diff1 > 0)
 		require.Equal(t, diff1, diff2)
-		require.Equal(t, uint64(amount), diff1/(int64(i)+int64(1)))
+		require.Equal(t, amount, diff1/int32(i+1))
 	}
 }
 
@@ -163,12 +173,12 @@ func TestTransferDeadLock(t *testing.T) {
 	var amount int32 = 10
 
 	errorsChan := make(chan error)
-	resultsChan := make(chan responses.TransferResponse)
+	resultsChan := make(chan models.Transfer)
 
 	for i := 0; i < concurrentTransactions; i++ {
 		reverse := i%2 == 0
-		go func(chan responses.TransferResponse, chan error, bool) {
-			fromAccountID, toAccountID := account1.AccountID, account2.AccountID
+		go func(chan models.Transfer, chan error, bool) {
+			fromAccountID, toAccountID := account1.ID, account2.ID
 			if reverse {
 				fromAccountID, toAccountID = toAccountID, fromAccountID
 			}
@@ -190,36 +200,36 @@ func TestTransferDeadLock(t *testing.T) {
 		transfer := <-resultsChan
 		require.NotEmpty(t, transfer)
 
-		var result responses.TransferResponse
-		result, err = services.GetTransfer(transfer.TransferID)
+		var result models.Transfer
+		result, err = services.GetTransfer(transfer.ID)
 		require.NoError(t, err)
 		require.NotEmpty(t, result)
 
-		var fromEntry responses.EntryResponse
+		var fromEntry models.Entry
 		fromEntry, err = services.GetEntry(result.OutgoingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, fromEntry)
 
-		var toEntry responses.EntryResponse
+		var toEntry models.Entry
 		toEntry, err = services.GetEntry(result.IncomingEntryID)
 		require.NoError(t, err)
 		require.NotEmpty(t, toEntry)
 
-		fromAccount, err := services.GetAccount(result.SrcAccountID)
+		fromAccount, err := services.GetAccount(result.FromAccountID)
 		require.NotEmpty(t, fromAccount)
 		require.NoError(t, err)
 
-		toAccount, err := services.GetAccount(result.DstAccountID)
+		toAccount, err := services.GetAccount(result.ToAccountID)
 		require.NotEmpty(t, toAccount)
 		require.NoError(t, err)
 	}
 
-	account1After, err := services.GetAccount(account1.AccountID)
+	account1After, err := services.GetAccount(account1.ID)
 	require.NotEmpty(t, account1)
 	require.NoError(t, err)
 	require.Equal(t, account1.Balance, account1After.Balance)
 
-	account2After, err := services.GetAccount(account2.AccountID)
+	account2After, err := services.GetAccount(account2.ID)
 	require.NotEmpty(t, account2)
 	require.NoError(t, err)
 	require.Equal(t, account2.Balance, account2After.Balance)
