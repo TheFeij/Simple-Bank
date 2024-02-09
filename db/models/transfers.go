@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Transfers struct {
+type Transfer struct {
 	ID              int64          `gorm:"column:id"`
 	FromAccountID   int64          `gorm:"column:from_account_id"`
 	ToAccountID     int64          `gorm:"column:to_account_id"`

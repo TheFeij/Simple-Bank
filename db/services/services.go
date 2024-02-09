@@ -128,7 +128,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (respon
 }
 
 func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.TransferResponse, error) {
-	var newTransfer models.Transfers
+	var newTransfer models.Transfer
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
 		var srcAccount, dstAccount models.Account
@@ -173,7 +173,7 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 			return err
 		}
 
-		newTransfer = models.Transfers{
+		newTransfer = models.Transfer{
 			FromAccountID:   req.FromAccountID,
 			ToAccountID:     req.ToAccountID,
 			Amount:          req.Amount,
@@ -240,8 +240,8 @@ func (services *SQLServices) GetAccount(id int64) (models.Account, error) {
 	return accountResponse, nil
 }
 
-func (services *SQLServices) GetTransfer(id int64) (models.Transfers, error) {
-	var transfer models.Transfers
+func (services *SQLServices) GetTransfer(id int64) (models.Transfer, error) {
+	var transfer models.Transfer
 
 	if err := services.DB.First(&transfer, id).Error; err != nil {
 		return transfer, err

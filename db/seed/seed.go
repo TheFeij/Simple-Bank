@@ -55,17 +55,17 @@ func Seed(db *gorm.DB) {
 	db.Create(&entry5)
 	db.Create(&entry6)
 
-	transfer1 := models.Transfers{
+	transfer1 := models.Transfer{
 		FromAccountID: 2,
 		ToAccountID:   3,
 		Amount:        500,
 	}
-	transfer2 := models.Transfers{
+	transfer2 := models.Transfer{
 		FromAccountID: 1,
 		ToAccountID:   3,
 		Amount:        200,
 	}
-	transfer3 := models.Transfers{
+	transfer3 := models.Transfer{
 		FromAccountID: 3,
 		ToAccountID:   2,
 		Amount:        300,
