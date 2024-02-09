@@ -22,8 +22,11 @@ func NewSQLServices(db *gorm.DB) Services {
 
 func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (models.Account, error) {
 	newAccount := models.Account{
-		Owner:   req.Owner,
-		Balance: req.Balance,
+		Owner:     req.Owner,
+		Balance:   req.Balance,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		DeletedAt: gorm.DeletedAt{},
 	}
 
 	if err := services.DB.Create(&newAccount).Error; err != nil {
