@@ -2,12 +2,14 @@ package api
 
 import (
 	"Simple-Bank/requests"
+	"Simple-Bank/responses"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
 	"net/http"
+	"time"
 )
 
 func (handler *Handler) CreateUser(context *gin.Context) {
@@ -43,7 +45,7 @@ func (handler *Handler) GetUser(context *gin.Context) {
 		return
 	}
 
-	res, err := handler.services.GetUser(req.Username)
+	user, err := handler.services.GetUser(req.Username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
@@ -51,6 +53,20 @@ func (handler *Handler) GetUser(context *gin.Context) {
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+
+	res := responses.UserInformationResponse{
+		Username:  user.Username,
+		Email:     user.Email,
+		FullName:  user.FullName,
+		CreatedAt: user.CreatedAt.Local().Truncate(time.Second),
+		UpdatedAt: user.CreatedAt.Local().Truncate(time.Second),
+	}
+
+	if user.DeletedAt.Time.IsZero() {
+		res.DeletedAt = user.DeletedAt.Time.Truncate(time.Second)
+	} else {
+		res.DeletedAt = user.DeletedAt.Time.Local().Truncate(time.Second)
 	}
 
 	context.JSON(http.StatusOK, res)
