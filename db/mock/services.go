@@ -10,8 +10,8 @@
 package mockdb
 
 import (
+	models "Simple-Bank/db/models"
 	requests "Simple-Bank/requests"
-	responses "Simple-Bank/responses"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -41,10 +41,10 @@ func (m *MockServices) EXPECT() *MockServicesMockRecorder {
 }
 
 // CreateAccount mocks base method.
-func (m *MockServices) CreateAccount(arg0 requests.CreateAccountRequest) (responses.CreateAccountResponse, error) {
+func (m *MockServices) CreateAccount(arg0 requests.CreateAccountRequest) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAccount", arg0)
-	ret0, _ := ret[0].(responses.CreateAccountResponse)
+	ret0, _ := ret[0].(models.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -56,10 +56,10 @@ func (mr *MockServicesMockRecorder) CreateAccount(arg0 any) *gomock.Call {
 }
 
 // CreateUser mocks base method.
-func (m *MockServices) CreateUser(arg0 requests.CreateUserRequest) (responses.UserInformationResponse, error) {
+func (m *MockServices) CreateUser(arg0 requests.CreateUserRequest) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", arg0)
-	ret0, _ := ret[0].(responses.UserInformationResponse)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -71,10 +71,10 @@ func (mr *MockServicesMockRecorder) CreateUser(arg0 any) *gomock.Call {
 }
 
 // DeleteAccount mocks base method.
-func (m *MockServices) DeleteAccount(arg0 int64) (responses.GetAccountResponse, error) {
+func (m *MockServices) DeleteAccount(arg0 int64) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteAccount", arg0)
-	ret0, _ := ret[0].(responses.GetAccountResponse)
+	ret0, _ := ret[0].(models.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -86,10 +86,10 @@ func (mr *MockServicesMockRecorder) DeleteAccount(arg0 any) *gomock.Call {
 }
 
 // DepositMoney mocks base method.
-func (m *MockServices) DepositMoney(arg0 requests.DepositRequest) (responses.EntryResponse, error) {
+func (m *MockServices) DepositMoney(arg0 requests.DepositRequest) (models.Entry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DepositMoney", arg0)
-	ret0, _ := ret[0].(responses.EntryResponse)
+	ret0, _ := ret[0].(models.Entry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -101,10 +101,10 @@ func (mr *MockServicesMockRecorder) DepositMoney(arg0 any) *gomock.Call {
 }
 
 // GetAccount mocks base method.
-func (m *MockServices) GetAccount(arg0 int64) (responses.GetAccountResponse, error) {
+func (m *MockServices) GetAccount(arg0 int64) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", arg0)
-	ret0, _ := ret[0].(responses.GetAccountResponse)
+	ret0, _ := ret[0].(models.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -116,10 +116,10 @@ func (mr *MockServicesMockRecorder) GetAccount(arg0 any) *gomock.Call {
 }
 
 // GetEntry mocks base method.
-func (m *MockServices) GetEntry(arg0 int64) (responses.EntryResponse, error) {
+func (m *MockServices) GetEntry(arg0 int64) (models.Entry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEntry", arg0)
-	ret0, _ := ret[0].(responses.EntryResponse)
+	ret0, _ := ret[0].(models.Entry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -131,10 +131,10 @@ func (mr *MockServicesMockRecorder) GetEntry(arg0 any) *gomock.Call {
 }
 
 // GetTransfer mocks base method.
-func (m *MockServices) GetTransfer(arg0 int64) (responses.TransferResponse, error) {
+func (m *MockServices) GetTransfer(arg0 int64) (models.Transfer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTransfer", arg0)
-	ret0, _ := ret[0].(responses.TransferResponse)
+	ret0, _ := ret[0].(models.Transfer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -146,10 +146,10 @@ func (mr *MockServicesMockRecorder) GetTransfer(arg0 any) *gomock.Call {
 }
 
 // GetUser mocks base method.
-func (m *MockServices) GetUser(arg0 string) (responses.UserInformationResponse, error) {
+func (m *MockServices) GetUser(arg0 string) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUser", arg0)
-	ret0, _ := ret[0].(responses.UserInformationResponse)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -161,10 +161,10 @@ func (mr *MockServicesMockRecorder) GetUser(arg0 any) *gomock.Call {
 }
 
 // ListAccounts mocks base method.
-func (m *MockServices) ListAccounts(arg0 int64, arg1 int8) (responses.ListAccountsResponse, error) {
+func (m *MockServices) ListAccounts(arg0 int64, arg1 int8) ([]models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAccounts", arg0, arg1)
-	ret0, _ := ret[0].(responses.ListAccountsResponse)
+	ret0, _ := ret[0].([]models.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -176,10 +176,10 @@ func (mr *MockServicesMockRecorder) ListAccounts(arg0, arg1 any) *gomock.Call {
 }
 
 // Transfer mocks base method.
-func (m *MockServices) Transfer(arg0 requests.TransferRequest) (responses.TransferResponse, error) {
+func (m *MockServices) Transfer(arg0 requests.TransferRequest) (models.Transfer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Transfer", arg0)
-	ret0, _ := ret[0].(responses.TransferResponse)
+	ret0, _ := ret[0].(models.Transfer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -191,10 +191,10 @@ func (mr *MockServicesMockRecorder) Transfer(arg0 any) *gomock.Call {
 }
 
 // WithdrawMoney mocks base method.
-func (m *MockServices) WithdrawMoney(arg0 requests.WithdrawRequest) (responses.EntryResponse, error) {
+func (m *MockServices) WithdrawMoney(arg0 requests.WithdrawRequest) (models.Entry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WithdrawMoney", arg0)
-	ret0, _ := ret[0].(responses.EntryResponse)
+	ret0, _ := ret[0].(models.Entry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
