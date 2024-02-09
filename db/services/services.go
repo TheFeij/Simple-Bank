@@ -203,7 +203,9 @@ func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) ([]mo
 func (services *SQLServices) GetAccount(id int64) (models.Account, error) {
 	var account models.Account
 
-	res := services.DB.First(&account, id)
+	res := services.DB.
+		Raw("SELECT * FROM accounts WHERE id = ?", id).
+		Scan(&account)
 
 	if res.RowsAffected == 0 {
 		return account, sql.ErrNoRows
