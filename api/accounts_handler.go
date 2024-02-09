@@ -2,10 +2,12 @@ package api
 
 import (
 	"Simple-Bank/requests"
+	"Simple-Bank/responses"
 	"database/sql"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 func (handler *Handler) CreateAccount(context *gin.Context) {
@@ -16,12 +18,18 @@ func (handler *Handler) CreateAccount(context *gin.Context) {
 		return
 	}
 
-	res, err := handler.services.CreateAccount(req)
+	newAccount, err := handler.services.CreateAccount(req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
+	res := responses.CreateAccountResponse{
+		AccountID: newAccount.ID,
+		Owner:     newAccount.Owner,
+		Balance:   newAccount.Balance,
+		CreatedAt: newAccount.CreatedAt.Truncate(time.Second).Local(),
+	}
 	context.JSON(http.StatusOK, res)
 }
 
