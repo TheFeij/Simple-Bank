@@ -271,10 +271,10 @@ func (services *SQLServices) GetEntry(id int64) (responses.EntryResponse, error)
 	return entry, nil
 }
 
-func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (responses.UserInformationResponse, error) {
+func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (models.User, error) {
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
-		return responses.UserInformationResponse{}, err
+		return models.User{}, err
 	}
 
 	newUser := models.User{
@@ -288,19 +288,10 @@ func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (respons
 	}
 
 	if err := services.DB.Create(&newUser).Error; err != nil {
-		return responses.UserInformationResponse{}, err
+		return models.User{}, err
 	}
 
-	return responses.UserInformationResponse{
-		Username:       newUser.Username,
-		Email:          newUser.Email,
-		FullName:       newUser.FullName,
-		HashedPassword: newUser.HashedPassword,
-		CreatedAt:      newUser.CreatedAt.Local().Truncate(time.Second),
-		UpdatedAt:      newUser.UpdatedAt.Local().Truncate(time.Second),
-		DeletedAt:      newUser.DeletedAt.Time.Truncate(time.Second),
-	}, nil
-
+	return newUser, nil
 }
 
 func (services *SQLServices) GetUser(username string) (models.User, error) {
