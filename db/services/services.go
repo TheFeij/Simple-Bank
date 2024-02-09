@@ -55,7 +55,7 @@ func (services *SQLServices) DeleteAccount(id int64) (responses.GetAccountRespon
 	return deletedAccount, nil
 }
 
-func (services *SQLServices) DepositMoney(req requests.DepositRequest) (responses.EntryResponse, error) {
+func (services *SQLServices) DepositMoney(req requests.DepositRequest) (models.Entry, error) {
 	var newEntry models.Entry
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -80,15 +80,10 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (response
 
 		return nil
 	}); err != nil {
-		return responses.EntryResponse{}, err
+		return newEntry, err
 	}
 
-	return responses.EntryResponse{
-		EntryID:   newEntry.ID,
-		AccountID: newEntry.AccountID,
-		Amount:    newEntry.Amount,
-		CreatedAt: newEntry.CreatedAt,
-	}, nil
+	return newEntry, nil
 }
 
 func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (models.Entry, error) {
