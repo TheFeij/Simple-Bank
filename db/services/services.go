@@ -127,7 +127,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (respon
 	}, nil
 }
 
-func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.TransferResponse, error) {
+func (services *SQLServices) Transfer(req requests.TransferRequest) (models.Transfer, error) {
 	var newTransfer models.Transfer
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -187,16 +187,10 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 
 		return nil
 	}); err != nil {
-		return responses.TransferResponse{}, err
+		return newTransfer, err
 	}
 
-	return responses.TransferResponse{
-		TransferID:   newTransfer.ID,
-		SrcAccountID: newTransfer.FromAccountID,
-		DstAccountID: newTransfer.ToAccountID,
-		CreatedAt:    newTransfer.CreatedAt,
-		Amount:       newTransfer.Amount,
-	}, nil
+	return newTransfer, nil
 }
 
 func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) ([]models.Account, error) {
