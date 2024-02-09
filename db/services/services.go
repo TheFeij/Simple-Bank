@@ -199,19 +199,13 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 	}, nil
 }
 
-func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) (responses.ListAccountsResponse, error) {
-	var accountsList responses.ListAccountsResponse
+func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) ([]models.Account, error) {
+	var accountsList []models.Account
 
 	offset := (pageNumber - 1) * int64(pageSize)
 	res := services.DB.
-		Raw("SELECT id AS account_id,"+
-			" created_at,"+
-			" deleted_at,"+
-			" updated_at,"+
-			" owner,"+
-			" balance"+
-			" FROM accounts LIMIT ? OFFSET ?", pageSize, offset).
-		Scan(&accountsList.Accounts)
+		Raw("SELECT * FROM accounts LIMIT ? OFFSET ?", pageSize, offset).
+		Scan(&accountsList)
 
 	if res.RowsAffected == 0 {
 		return accountsList, sql.ErrNoRows
