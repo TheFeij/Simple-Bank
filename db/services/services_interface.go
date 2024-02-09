@@ -1,6 +1,7 @@
 package services
 
 import (
+	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 )
@@ -15,7 +16,7 @@ type Services interface {
 	GetAccount(id int64) (responses.GetAccountResponse, error)
 	GetTransfer(id int64) (responses.TransferResponse, error)
 	GetEntry(id int64) (responses.EntryResponse, error)
-	GetUser(username string) (responses.UserInformationResponse, error)
+	GetUser(username string) (models.User, error)
 	CreateUser(req requests.CreateUserRequest) (responses.UserInformationResponse, error)
 }
 

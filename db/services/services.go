@@ -292,41 +292,27 @@ func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (respons
 	}
 
 	return responses.UserInformationResponse{
-		Username:  newUser.Username,
-		Email:     newUser.Email,
-		FullName:  newUser.FullName,
-		CreatedAt: newUser.CreatedAt.Local().Truncate(time.Second),
-		UpdatedAt: newUser.UpdatedAt.Local().Truncate(time.Second),
-		DeletedAt: newUser.DeletedAt.Time.Truncate(time.Second),
+		Username:       newUser.Username,
+		Email:          newUser.Email,
+		FullName:       newUser.FullName,
+		HashedPassword: newUser.HashedPassword,
+		CreatedAt:      newUser.CreatedAt.Local().Truncate(time.Second),
+		UpdatedAt:      newUser.UpdatedAt.Local().Truncate(time.Second),
+		DeletedAt:      newUser.DeletedAt.Time.Truncate(time.Second),
 	}, nil
 
 }
 
-func (services *SQLServices) GetUser(username string) (responses.UserInformationResponse, error) {
+func (services *SQLServices) GetUser(username string) (models.User, error) {
 	var user models.User
-	var res responses.UserInformationResponse
 
 	if err := services.DB.
 		Raw("SELECT * FROM users WHERE username = ?", username).
 		Scan(&user).Error; err != nil {
-		return res, err
+		return user, err
 	}
 
-	res = responses.UserInformationResponse{
-		Username:  user.Username,
-		Email:     user.Email,
-		FullName:  user.FullName,
-		CreatedAt: user.CreatedAt.Local().Truncate(time.Second),
-		UpdatedAt: user.CreatedAt.Local().Truncate(time.Second),
-	}
-
-	if user.DeletedAt.Time.IsZero() {
-		res.DeletedAt = user.DeletedAt.Time.Truncate(time.Second)
-	} else {
-		res.DeletedAt = user.DeletedAt.Time.Local().Truncate(time.Second)
-	}
-
-	return res, nil
+	return user, nil
 }
 
 func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Accounts, models.Accounts, error) {
