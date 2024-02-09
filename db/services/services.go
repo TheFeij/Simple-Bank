@@ -39,13 +39,15 @@ func (services *SQLServices) CreateAccount(req requests.CreateAccountRequest) (m
 func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 	var deletedAccount models.Account
 
-	if err := services.DB.
-		Raw("SELECT * FROM accounts WHERE id = ?", id).
-		Scan(&deletedAccount).Error; err != nil {
+	if err := services.DB.Exec(
+		"UPDATE accounts SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?", id).
+		Error; err != nil {
 		return deletedAccount, err
 	}
 
-	if err := services.DB.Delete(&models.Account{}, id).Error; err != nil {
+	if err := services.DB.
+		Raw("SELECT * FROM accounts WHERE id = ?", id).
+		Scan(&deletedAccount).Error; err != nil {
 		return deletedAccount, err
 	}
 
