@@ -56,10 +56,10 @@ func (services *SQLServices) DeleteAccount(id int64) (responses.GetAccountRespon
 }
 
 func (services *SQLServices) DepositMoney(req requests.DepositRequest) (responses.EntryResponse, error) {
-	var newEntry models.Entries
+	var newEntry models.Entry
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
-		newEntry = models.Entries{
+		newEntry = models.Entry{
 			AccountID: req.AccountID,
 			Amount:    req.Amount,
 		}
@@ -92,10 +92,10 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (response
 }
 
 func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (responses.EntryResponse, error) {
-	var newEntry models.Entries
+	var newEntry models.Entry
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
-		newEntry = models.Entries{
+		newEntry = models.Entry{
 			AccountID: req.AccountID,
 			Amount:    -req.Amount,
 		}
@@ -158,11 +158,11 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (responses.T
 			return err
 		}
 
-		FromEntry := models.Entries{
+		FromEntry := models.Entry{
 			AccountID: req.FromAccountID,
 			Amount:    -req.Amount,
 		}
-		ToEntry := models.Entries{
+		ToEntry := models.Entry{
 			AccountID: req.ToAccountID,
 			Amount:    req.Amount,
 		}
@@ -250,8 +250,8 @@ func (services *SQLServices) GetTransfer(id int64) (models.Transfers, error) {
 	return transfer, nil
 }
 
-func (services *SQLServices) GetEntry(id int64) (models.Entries, error) {
-	var entry models.Entries
+func (services *SQLServices) GetEntry(id int64) (models.Entry, error) {
+	var entry models.Entry
 
 	if err := services.DB.First(&entry, id).Error; err != nil {
 		return entry, err

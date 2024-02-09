@@ -23,27 +23,27 @@ func Seed(db *gorm.DB) {
 	db.Create(&account2)
 	db.Create(&account3)
 
-	entry1 := models.Entries{
+	entry1 := models.Entry{
 		AccountID: 3,
 		Amount:    500,
 	}
-	entry2 := models.Entries{
+	entry2 := models.Entry{
 		AccountID: 1,
 		Amount:    -200,
 	}
-	entry3 := models.Entries{
+	entry3 := models.Entry{
 		AccountID: 3,
 		Amount:    -300,
 	}
-	entry4 := models.Entries{
+	entry4 := models.Entry{
 		AccountID: 3,
 		Amount:    200,
 	}
-	entry5 := models.Entries{
+	entry5 := models.Entry{
 		AccountID: 2,
 		Amount:    300,
 	}
-	entry6 := models.Entries{
+	entry6 := models.Entry{
 		AccountID: 2,
 		Amount:    -500,
 	}

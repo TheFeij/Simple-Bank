@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Entries struct {
+type Entry struct {
 	ID        int64          `gorm:"column:id"`
 	AccountID int64          `gorm:"column:account_id"`
 	Amount    int32          `gorm:"column:amount"`
