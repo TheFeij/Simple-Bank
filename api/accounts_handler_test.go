@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -191,6 +192,97 @@ func TestCreateUserAPI(t *testing.T) {
 			require.NoError(t, err)
 
 			httpReq, err := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(jsonReq))
+			require.NoError(t, err)
+
+			server.RouterServeHTTP(recorder, httpReq)
+			testCase.checkResponse(t, recorder)
+		})
+
+	}
+
+}
+
+func TestGetUserAPI(t *testing.T) {
+	createdUser, _ := randomUser(t)
+
+	testCases := []struct {
+		name          string
+		username      string
+		buildStubs    func(services *mockdb.MockServices, username string)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:     "OK",
+			username: createdUser.Username,
+			buildStubs: func(services *mockdb.MockServices, username string) {
+				services.EXPECT().
+					GetUser(gomock.Eq(username)).
+					Times(1).
+					Return(createdUser, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchUser(t, recorder.Body, createdUser)
+			},
+		},
+		{
+			name:     "NotFound",
+			username: createdUser.Username,
+			buildStubs: func(services *mockdb.MockServices, username string) {
+				services.EXPECT().
+					GetUser(gomock.Eq(username)).
+					Times(1).
+					Return(models.User{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:     "InternalError",
+			username: createdUser.Username,
+			buildStubs: func(services *mockdb.MockServices, username string) {
+				services.EXPECT().
+					GetUser(gomock.Eq(username)).
+					Times(1).
+					Return(models.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:     "InvalidUsername",
+			username: util.RandomEmail(), // emails are invalid usernames
+			buildStubs: func(services *mockdb.MockServices, username string) {
+				services.EXPECT().
+					GetUser(gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+
+		testCase := testCases[i]
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			services := mockdb.NewMockServices(ctrl)
+			// build stubs
+			testCase.buildStubs(services, testCase.username)
+
+			// testing http server
+			server := NewServer(services)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/users/%s", testCase.username)
+
+			httpReq, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
 			server.RouterServeHTTP(recorder, httpReq)
