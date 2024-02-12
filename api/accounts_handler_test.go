@@ -2,78 +2,168 @@ package api
 
 import (
 	mockdb "Simple-Bank/db/mock"
+	"Simple-Bank/db/models"
+	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/util"
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 )
 
-func TestGetAccountAPI(t *testing.T) {
-	account := randomAccount()
-	var responseError error = nil
+func TestCreateUserAPI(t *testing.T) {
+	createdUser, password := randomUser(t)
 
 	testCases := []struct {
 		name          string
-		AccountID     int64
-		buildStubs    func(services *mockdb.MockServices)
+		req           requests.CreateUserRequest
+		buildStubs    func(services *mockdb.MockServices, req requests.CreateUserRequest)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name:      "OK",
-			AccountID: int64(account.AccountID),
-			buildStubs: func(services *mockdb.MockServices) {
+			name: "OK",
+			req: requests.CreateUserRequest{
+				Username: createdUser.Username,
+				FullName: createdUser.FullName,
+				Email:    createdUser.Email,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
 				services.EXPECT().
-					GetAccount(gomock.Eq(account.AccountID)).
+					CreateUser(gomock.Eq(req)).
 					Times(1).
-					Return(account, responseError)
+					Return(createdUser, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				requireBodyMatchAccount(t, recorder.Body, account)
+				requireBodyMatchUser(t, recorder.Body, createdUser)
 			},
 		},
 		{
-			name:      "NotFound",
-			AccountID: int64(account.AccountID),
-			buildStubs: func(services *mockdb.MockServices) {
-				services.EXPECT().
-					GetAccount(gomock.Eq(account.AccountID)).
-					Times(1).
-					Return(responses.GetAccountResponse{}, sql.ErrNoRows)
+			name: "InternalError",
+			req: requests.CreateUserRequest{
+				Username: createdUser.Username,
+				FullName: createdUser.FullName,
+				Email:    createdUser.Email,
+				Password: password,
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusNotFound, recorder.Code)
-			},
-		},
-		{
-			name:      "InternalError",
-			AccountID: int64(account.AccountID),
-			buildStubs: func(services *mockdb.MockServices) {
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
 				services.EXPECT().
-					GetAccount(gomock.Eq(account.AccountID)).
+					CreateUser(gomock.Eq(req)).
 					Times(1).
-					Return(responses.GetAccountResponse{}, sql.ErrConnDone)
+					Return(models.User{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
-			name:      "InvalidID",
-			AccountID: util.RandomInt(-1000, 0),
-			buildStubs: func(services *mockdb.MockServices) {
+			name: "DuplicateEmail",
+			req: requests.CreateUserRequest{
+				Username: createdUser.Username,
+				FullName: createdUser.FullName,
+				Email:    createdUser.Email,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
 				services.EXPECT().
-					GetAccount(gomock.Any()).
+					CreateUser(gomock.Eq(req)).
+					Times(1).
+					Return(models.User{}, &pgconn.PgError{ConstraintName: "users_email_key"})
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "DuplicateUsername",
+			req: requests.CreateUserRequest{
+				Username: createdUser.Username,
+				FullName: createdUser.FullName,
+				Email:    createdUser.Email,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
+				services.EXPECT().
+					CreateUser(gomock.Eq(req)).
+					Times(1).
+					Return(models.User{}, &pgconn.PgError{ConstraintName: "users_pkey"})
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidFullname",
+			req: requests.CreateUserRequest{
+				Username: createdUser.Username,
+				FullName: util.RandomEmail(),
+				Email:    createdUser.Email,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
+				services.EXPECT().
+					CreateUser(gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidUsername",
+			req: requests.CreateUserRequest{
+				Username: util.RandomEmail(),
+				FullName: createdUser.FullName,
+				Email:    createdUser.Email,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
+				services.EXPECT().
+					CreateUser(gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidEmail",
+			req: requests.CreateUserRequest{
+				Username: createdUser.Username,
+				FullName: createdUser.FullName,
+				Email:    util.RandomUsername(),
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
+				services.EXPECT().
+					CreateUser(gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidPassword",
+			req: requests.CreateUserRequest{
+				Username: createdUser.Username,
+				FullName: createdUser.FullName,
+				Email:    createdUser.Email,
+				Password: "123456",
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.CreateUserRequest) {
+				services.EXPECT().
+					CreateUser(gomock.Any()).
 					Times(0)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -91,17 +181,19 @@ func TestGetAccountAPI(t *testing.T) {
 
 			services := mockdb.NewMockServices(ctrl)
 			// build stubs
-			testCase.buildStubs(services)
+			testCase.buildStubs(services, testCase.req)
 
 			// testing http server
 			server := NewServer(services)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/accounts/%d", testCase.AccountID)
-			req, err := http.NewRequest(http.MethodGet, url, nil)
+			jsonReq, err := json.Marshal(testCase.req)
 			require.NoError(t, err)
 
-			server.RouterServeHTTP(recorder, req)
+			httpReq, err := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(jsonReq))
+			require.NoError(t, err)
+
+			server.RouterServeHTTP(recorder, httpReq)
 			testCase.checkResponse(t, recorder)
 		})
 
@@ -109,23 +201,33 @@ func TestGetAccountAPI(t *testing.T) {
 
 }
 
-func randomAccount() responses.GetAccountResponse {
-	return responses.GetAccountResponse{
-		AccountID: util.RandomID(),
-		CreatedAt: time.Now().Truncate(time.Nanosecond).UTC(),
-		UpdatedAt: time.Now().Truncate(time.Nanosecond).UTC(),
-		DeletedAt: gorm.DeletedAt{},
-		Owner:     util.RandomUsername(),
-		Balance:   util.RandomBalance(),
-	}
+func randomUser(t *testing.T) (models.User, string) {
+	password := util.RandomPassword()
+	hashedPassword, err := util.HashPassword(password)
+	require.NoError(t, err)
+
+	return models.User{
+		Username:       util.RandomUsername(),
+		Email:          util.RandomEmail(),
+		HashedPassword: hashedPassword,
+		FullName:       util.RandomFullname(),
+		CreatedAt:      time.Now().Truncate(time.Second).UTC(),
+		UpdatedAt:      time.Now().Truncate(time.Second).UTC(),
+		DeletedAt:      gorm.DeletedAt{},
+	}, password
 }
 
-func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account responses.GetAccountResponse) {
-	data, err := ioutil.ReadAll(body)
+func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user models.User) {
+	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var response responses.GetAccountResponse
+	var response responses.UserInformationResponse
 	err = json.Unmarshal(data, &response)
 	require.NoError(t, err)
-	require.Equal(t, account, response)
+	require.Equal(t, user.Username, response.Username)
+	require.Equal(t, user.FullName, response.FullName)
+	require.Equal(t, user.Email, response.Email)
+	require.Equal(t, user.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
+	require.Equal(t, user.UpdatedAt.Local().Truncate(time.Second), response.UpdatedAt)
+	require.Equal(t, user.DeletedAt.Time.Truncate(time.Second), response.DeletedAt)
 }
