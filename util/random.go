@@ -8,10 +8,13 @@ import (
 )
 
 const (
-	LOWERCASE = "abcdefghijklmnopqrstuvwxyz"
-	UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	NUMBERS   = "0123456789"
-	SPECIALS  = "_!@#$%&*^"
+	LOWERCASE    = "abcdefghijklmnopqrstuvwxyz"
+	UPPERCASE    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	NUMBERS      = "0123456789"
+	SPECIALS     = "_!@#$%&*^"
+	ALPHANUMERIC = LOWERCASE + UPPERCASE + NUMBERS
+	ALPHABETS    = LOWERCASE + UPPERCASE
+	ALL          = ALPHANUMERIC + SPECIALS
 )
 
 var random *rand.Rand
@@ -41,13 +44,13 @@ func RandomID() int64 {
 }
 
 func RandomUsername() string {
-	username := RandomString(1, LOWERCASE+UPPERCASE)
+	username := RandomString(1, ALPHABETS)
 	username += RandomString(
 		int(RandomInt(3, 62)),
-		LOWERCASE+UPPERCASE+NUMBERS+"_")
+		ALPHANUMERIC+"_")
 	username += RandomString(
 		int(RandomInt(0, 1)),
-		LOWERCASE+UPPERCASE+NUMBERS)
+		ALPHANUMERIC)
 
 	return username
 }
@@ -59,19 +62,21 @@ func RandomPassword() string {
 	password += RandomString(1, SPECIALS)
 	password += RandomString(
 		int(RandomInt(4, 60)),
-		LOWERCASE+UPPERCASE+NUMBERS+NUMBERS+SPECIALS)
+		ALL)
 
 	return password
 }
+
 func RandomBalance() int64 {
 	return RandomInt(0, math.MaxInt64-1)
 }
+
 func RandomAmount() int32 {
 	return int32(RandomInt(0, math.MinInt32))
 }
 
 func RandomFullname() string {
-	randomString := RandomString(int(RandomInt(3, 64)), UPPERCASE+LOWERCASE)
+	randomString := RandomString(int(RandomInt(3, 64)), ALPHABETS)
 
 	index := RandomInt(1, int64(len(randomString)-2))
 	fullname := randomString[:index]
@@ -83,7 +88,7 @@ func RandomFullname() string {
 
 func RandomEmail() string {
 	username := RandomUsername()
-	domain := RandomString(int(RandomInt(5, 10)), LOWERCASE+UPPERCASE)
+	domain := RandomString(int(RandomInt(5, 10)), ALPHABETS)
 	tld := RandomString(int(RandomInt(2, 5)), LOWERCASE)
 
 	return username + "@" + domain + "." + tld
