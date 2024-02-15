@@ -47,7 +47,7 @@ func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	if err != nil {
 		var verr *jwt.ValidationError
 		ok := errors.As(err, &verr)
-		if ok && errors.Is(ErrInvalidToken, verr) {
+		if ok && errors.Is(verr.Inner, ErrInvalidToken) {
 			return nil, ErrInvalidToken
 		}
 
