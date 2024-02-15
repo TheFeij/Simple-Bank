@@ -7,10 +7,12 @@ import (
 	"time"
 )
 
-var lowerCases = "abcdefghijklmnopqrstuvwxyz"
-var upperCases = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-var numbers = "0123456789"
-var specials = "_!@#$%&*^"
+const (
+	LOWERCASE = "abcdefghijklmnopqrstuvwxyz"
+	UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	NUMBERS   = "0123456789"
+	SPECIALS  = "_!@#$%&*^"
+)
 
 var random *rand.Rand
 
@@ -39,25 +41,25 @@ func RandomID() int64 {
 }
 
 func RandomUsername() string {
-	username := RandomString(1, lowerCases+upperCases)
+	username := RandomString(1, LOWERCASE+UPPERCASE)
 	username += RandomString(
 		int(RandomInt(3, 62)),
-		lowerCases+upperCases+numbers+"_")
+		LOWERCASE+UPPERCASE+NUMBERS+"_")
 	username += RandomString(
 		int(RandomInt(0, 1)),
-		lowerCases+upperCases+numbers)
+		LOWERCASE+UPPERCASE+NUMBERS)
 
 	return username
 }
 
 func RandomPassword() string {
-	password := RandomString(1, lowerCases)
-	password += RandomString(1, upperCases)
-	password += RandomString(1, numbers)
-	password += RandomString(1, specials)
+	password := RandomString(1, LOWERCASE)
+	password += RandomString(1, UPPERCASE)
+	password += RandomString(1, NUMBERS)
+	password += RandomString(1, SPECIALS)
 	password += RandomString(
 		int(RandomInt(4, 60)),
-		lowerCases+upperCases+numbers+numbers+specials)
+		LOWERCASE+UPPERCASE+NUMBERS+NUMBERS+SPECIALS)
 
 	return password
 }
@@ -69,7 +71,7 @@ func RandomAmount() int32 {
 }
 
 func RandomFullname() string {
-	randomString := RandomString(int(RandomInt(3, 64)), upperCases+lowerCases)
+	randomString := RandomString(int(RandomInt(3, 64)), UPPERCASE+LOWERCASE)
 
 	index := RandomInt(1, int64(len(randomString)-2))
 	fullname := randomString[:index]
@@ -81,8 +83,8 @@ func RandomFullname() string {
 
 func RandomEmail() string {
 	username := RandomUsername()
-	domain := RandomString(int(RandomInt(5, 10)), lowerCases+upperCases)
-	tld := RandomString(int(RandomInt(2, 5)), lowerCases)
+	domain := RandomString(int(RandomInt(5, 10)), LOWERCASE+UPPERCASE)
+	tld := RandomString(int(RandomInt(2, 5)), LOWERCASE)
 
 	return username + "@" + domain + "." + tld
 }
