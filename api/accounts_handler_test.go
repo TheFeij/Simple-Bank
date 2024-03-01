@@ -185,7 +185,7 @@ func TestCreateUserAPI(t *testing.T) {
 			testCase.buildStubs(services, testCase.req)
 
 			// testing http server
-			server := NewServer(services)
+			server := NewTestServer(t, services)
 			recorder := httptest.NewRecorder()
 
 			jsonReq, err := json.Marshal(testCase.req)
@@ -277,7 +277,7 @@ func TestGetUserAPI(t *testing.T) {
 			testCase.buildStubs(services, testCase.username)
 
 			// testing http server
-			server := NewServer(services)
+			server := NewTestServer(t, services)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/users/%s", testCase.username)
