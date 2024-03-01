@@ -5,19 +5,19 @@ import (
 )
 
 type Config struct {
-	Database Database `mapstructure:"Database"`
-	Server   Server   `mapstructure:"Server"`
+	Database Database `mapstructure:"DATABASE"`
+	Server   Server   `mapstructure:"SERVER"`
 	Token    Token    `mapstructure:"TOKEN"`
 }
 
 type Database struct {
-	Driver string `mapstructure:"Driver"`
-	Source string `mapstructure:"Source"`
+	Driver string `mapstructure:"DRIVER"`
+	Source string `mapstructure:"SOURCE"`
 }
 
 type Server struct {
-	Host string `mapstructure:"Host"`
-	Port string `mapstructure:"Port"`
+	Host string `mapstructure:"HOST"`
+	Port string `mapstructure:"PORT"`
 }
 
 type Token struct {
