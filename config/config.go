@@ -7,6 +7,7 @@ import (
 type Config struct {
 	Database Database `mapstructure:"Database"`
 	Server   Server   `mapstructure:"Server"`
+	Token    Token    `mapstructure:"TOKEN"`
 }
 
 type Database struct {
@@ -19,7 +20,12 @@ type Server struct {
 	Port string `mapstructure:"Port"`
 }
 
-func LoadConfig(path string) (Config, error) {
+type Token struct {
+	SymmetricKey        string        `mapstructure:"SYMMETRIC_KEY"`
+	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+}
+
+func LoadConfig(path, name string) (Config, error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("config")
 	viper.SetConfigType("json")
