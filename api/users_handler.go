@@ -3,6 +3,7 @@ package api
 import (
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
+	"Simple-Bank/util"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -79,4 +80,49 @@ func (handler *Handler) GetUser(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, res)
+}
+
+func (handler *Handler) Login(context *gin.Context) {
+	var req requests.LoginRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := handler.services.GetUser(req.Username)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			context.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if err := util.CheckPassword(req.Password, user.HashedPassword); err != nil {
+		context.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	userInformation := responses.UserInformationResponse{
+		Username:  user.Username,
+		Email:     user.Email,
+		FullName:  user.FullName,
+		CreatedAt: user.CreatedAt.Local().Truncate(time.Second),
+		UpdatedAt: user.CreatedAt.Local().Truncate(time.Second),
+	}
+
+	accessToken, err := handler.tokenMaker.CreateToken(
+		req.Username,
+		handler.config.Token.AccessTokenDuration,
+	)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	response := responses.LoginResponse{
+		UserInformation: userInformation,
+		AccessToken:     accessToken,
+	}
+	context.JSON(http.StatusOK, response)
 }
