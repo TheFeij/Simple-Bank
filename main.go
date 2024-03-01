@@ -28,7 +28,7 @@ func main() {
 		}
 	}(DB)
 
-	server := api.NewServer(services.NewSQLServices(db))
+	server, _ := api.NewServer(&configs, services.NewSQLServices(db))
 	if err := server.Start(configs.Server.Host + ":" + configs.Server.Port); err != nil {
 		log.Fatalln("cannot start server: ", err)
 	}
