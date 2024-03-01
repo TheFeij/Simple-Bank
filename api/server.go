@@ -21,6 +21,7 @@ type Server struct {
 
 func NewServer(config *config.Config, services services.Services) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.Token.SymmetricKey)
+	fmt.Println(len(config.Token.SymmetricKey))
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
@@ -32,6 +33,11 @@ func NewServer(config *config.Config, services services.Services) (*Server, erro
 
 	registerCustomValidators()
 
+	server.setupRouter()
+	return server, nil
+}
+
+func (server *Server) setupRouter() {
 	server.router.GET("/", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"message": "Welcome to our bank"})
 	})
@@ -40,7 +46,7 @@ func NewServer(config *config.Config, services services.Services) (*Server, erro
 	server.router.GET("/accounts", server.handlers.GetAccountsList)
 	server.router.POST("/users", server.handlers.CreateUser)
 	server.router.GET("/users/:username", server.handlers.GetUser)
-	return server, nil
+	server.router.POST("/users/login", server.handlers.Login)
 }
 
 func registerCustomValidators() {
