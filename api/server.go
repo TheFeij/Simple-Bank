@@ -15,10 +15,8 @@ import (
 )
 
 type Server struct {
-	config     *config.Config
-	router     *gin.Engine
-	tokenMaker token.Maker
-	handlers   *Handler
+	router   *gin.Engine
+	handlers *Handler
 }
 
 func NewServer(config *config.Config, services services.Services) (*Server, error) {
@@ -28,10 +26,8 @@ func NewServer(config *config.Config, services services.Services) (*Server, erro
 	}
 
 	server := &Server{
-		config:     config,
-		router:     gin.Default(),
-		tokenMaker: tokenMaker,
-		handlers:   New(services),
+		router:   gin.Default(),
+		handlers: New(services, tokenMaker, config),
 	}
 
 	registerCustomValidators()
@@ -44,7 +40,6 @@ func NewServer(config *config.Config, services services.Services) (*Server, erro
 	server.router.GET("/accounts", server.handlers.GetAccountsList)
 	server.router.POST("/users", server.handlers.CreateUser)
 	server.router.GET("/users/:username", server.handlers.GetUser)
-
 	return server, nil
 }
 
