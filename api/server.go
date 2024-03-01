@@ -1,6 +1,7 @@
 package api
 
 import (
+	"Simple-Bank/config"
 	"Simple-Bank/db/services"
 	"Simple-Bank/requests"
 	"Simple-Bank/token"
@@ -14,18 +15,20 @@ import (
 )
 
 type Server struct {
+	config     *config.Config
 	router     *gin.Engine
 	tokenMaker token.Maker
 	handlers   *Handler
 }
 
-func NewServer(services services.Services) (*Server, error) {
-	tokenMaker, err := token.NewPasetoMaker("")
+func NewServer(config *config.Config, services services.Services) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.Token.SymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 
 	server := &Server{
+		config:     config,
 		router:     gin.Default(),
 		tokenMaker: tokenMaker,
 		handlers:   New(services),
