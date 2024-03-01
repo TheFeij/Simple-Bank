@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"time"
 )
 
 type Config struct {
@@ -27,7 +28,7 @@ type Token struct {
 
 func LoadConfig(path, name string) (Config, error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("config")
+	viper.SetConfigName(name)
 	viper.SetConfigType("json")
 
 	viper.AutomaticEnv()
