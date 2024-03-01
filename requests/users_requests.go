@@ -10,3 +10,8 @@ type CreateUserRequest struct {
 type GetUserRequest struct {
 	Username string `uri:"username" binding:"required,validUsername"`
 }
+
+type LoginRequest struct {
+	Username string `json:"username" binding:"required,validUsername"`
+	Password string `json:"password" binding:"required,validPassword"`
+}
