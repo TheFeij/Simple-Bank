@@ -6,5 +6,9 @@
   "SERVER": {
     "HOST": "localhost",
     "PORT": "8080"
+  },
+  "TOKEN":{
+    "SYMMETRIC_KEY": "e7ce60b2c262e2bcdeab47385f328af97501fe92c0688997efce854c8e63fa3b",
+    "ACCESS_TOKEN_DURATION": "15m"
   }
 }
