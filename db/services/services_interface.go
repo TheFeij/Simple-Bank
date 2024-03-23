@@ -6,7 +6,7 @@ import (
 )
 
 type Services interface {
-	CreateAccount(req requests.CreateAccountRequest) (models.Account, error)
+	CreateAccount(owner string) (models.Account, error)
 	DeleteAccount(id int64) (models.Account, error)
 	DepositMoney(req requests.DepositRequest) (models.Entry, error)
 	WithdrawMoney(req requests.WithdrawRequest) (models.Entry, error)
