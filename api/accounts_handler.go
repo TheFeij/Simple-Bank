@@ -6,6 +6,7 @@ import (
 	"Simple-Bank/token"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -43,6 +44,13 @@ func (handler *Handler) GetAccount(context *gin.Context) {
 			return
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	auhPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
+	if auhPayload.Username != account.Owner {
+		err := fmt.Errorf("users cannot create account for other users")
+		context.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
