@@ -1,9 +1,5 @@
 package requests
 
-type CreateAccountRequest struct {
-	Balance int64 `json:"balance" binding:"gte=0"`
-}
-
 type GetAccountRequest struct {
 	ID int64 `uri:"id" binding:"required,min=1"`
 }
