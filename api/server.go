@@ -41,11 +41,13 @@ func (server *Server) setupRouter() {
 	server.router.GET("/", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"message": "Welcome to our bank"})
 	})
-	server.router.POST("/accounts", server.handlers.CreateAccount)
-	server.router.GET("/accounts/:id", server.handlers.GetAccount)
-	server.router.GET("/accounts", server.handlers.GetAccountsList)
+
+	authRoutes := server.router.Group("/").Use(authMiddleWare(server.handlers.tokenMaker))
+	authRoutes.POST("/accounts", server.handlers.CreateAccount)
+	authRoutes.GET("/accounts/:id", server.handlers.GetAccount)
+	authRoutes.GET("/accounts", server.handlers.GetAccountsList)
 	server.router.POST("/users", server.handlers.CreateUser)
-	server.router.GET("/users/:username", server.handlers.GetUser)
+	authRoutes.GET("/users/:username", server.handlers.GetUser)
 	server.router.POST("/users/login", server.handlers.Login)
 }
 
