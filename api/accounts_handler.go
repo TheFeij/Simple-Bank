@@ -78,7 +78,9 @@ func (handler *Handler) GetAccountsList(context *gin.Context) {
 		return
 	}
 
-	accounts, err := handler.services.ListAccounts(req.PageID, req.PageSize)
+	auhPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	accounts, err := handler.services.ListAccounts(auhPayload.Username, req.PageID, req.PageSize)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
