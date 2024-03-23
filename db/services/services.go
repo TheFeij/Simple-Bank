@@ -182,12 +182,12 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (models.Tran
 	return newTransfer, nil
 }
 
-func (services *SQLServices) ListAccounts(pageNumber int64, pageSize int8) ([]models.Account, error) {
+func (services *SQLServices) ListAccounts(owner string, pageNumber int64, pageSize int8) ([]models.Account, error) {
 	var accountsList []models.Account
 
 	offset := (pageNumber - 1) * int64(pageSize)
 	res := services.DB.
-		Raw("SELECT * FROM accounts LIMIT ? OFFSET ?", pageSize, offset).
+		Raw("SELECT * FROM accounts WHERE owner = ? LIMIT ? OFFSET ?", owner, pageSize, offset).
 		Scan(&accountsList)
 
 	if res.RowsAffected == 0 {
