@@ -1,8 +1,7 @@
 package requests
 
 type CreateAccountRequest struct {
-	Owner   string `json:"owner" binding:"required,alpha,validUsername"`
-	Balance int64  `json:"balance" binding:"gte=0"`
+	Balance int64 `json:"balance" binding:"gte=0"`
 }
 
 type GetAccountRequest struct {
