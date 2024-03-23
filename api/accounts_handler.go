@@ -3,6 +3,7 @@ package api
 import (
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
+	"Simple-Bank/token"
 	"database/sql"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -11,14 +12,9 @@ import (
 )
 
 func (handler *Handler) CreateAccount(context *gin.Context) {
-	var req requests.CreateAccountRequest
+	authPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	if err := context.ShouldBindJSON(&req); err != nil {
-		context.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	newAccount, err := handler.services.CreateAccount(req)
+	newAccount, err := handler.services.CreateAccount(authPayload.Username)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
