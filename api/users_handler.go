@@ -3,6 +3,7 @@ package api
 import (
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
+	"Simple-Bank/token"
 	"Simple-Bank/util"
 	"database/sql"
 	"errors"
@@ -51,6 +52,13 @@ func (handler *Handler) GetUser(context *gin.Context) {
 	var req requests.GetUserRequest
 	if err := context.ShouldBindUri(&req); err != nil {
 		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	authPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != req.Username {
+		err := fmt.Errorf("users cannot see other user`s information")
+		context.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
