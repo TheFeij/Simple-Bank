@@ -9,22 +9,16 @@ import (
 	"time"
 )
 
-func createRandomAccount(t *testing.T) models.Account {
-	user := createRandomUser(t)
-
-	createAccountRequest := requests.CreateAccountRequest{
-		Owner:   user.Username,
-		Balance: util.RandomBalance(),
-	}
+func createAccount(t *testing.T, owner string) models.Account {
 
 	createdTime := time.Now().Truncate(time.Nanosecond).Local()
 
-	account, err := services.CreateAccount(createAccountRequest)
+	account, err := services.CreateAccount(owner)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
-	require.Equal(t, createAccountRequest.Owner, account.Owner)
-	require.Equal(t, createAccountRequest.Balance, account.Balance)
+	require.Equal(t, owner, account.Owner)
+	require.Equal(t, int64(0), account.Balance)
 	require.True(t, account.ID > 0)
 	require.WithinDuration(t, createdTime, account.CreatedAt, time.Second)
 	require.WithinDuration(t, createdTime, account.UpdatedAt, time.Second)
@@ -34,11 +28,13 @@ func createRandomAccount(t *testing.T) models.Account {
 }
 
 func TestCreateAccount(t *testing.T) {
-	createRandomAccount(t)
+	user := createRandomUser(t)
+	createAccount(t, user.Username)
 }
 
 func TestGetAccount(t *testing.T) {
-	account := createRandomAccount(t)
+	user := createRandomUser(t)
+	account := createAccount(t, user.Username)
 
 	response, err := services.GetAccount(account.ID)
 
@@ -55,7 +51,9 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestDeleteAccount(t *testing.T) {
-	account := createRandomAccount(t)
+	user := createRandomUser(t)
+	account := createAccount(t, user.Username)
+
 	response, err := services.DeleteAccount(account.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, response)
@@ -74,12 +72,14 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestGetAccountsList(t *testing.T) {
+	user := createRandomUser(t)
+
 	createdAccounts := make([]models.Account, 5)
 	for i := 0; i < 5; i++ {
-		createdAccounts[i] = createRandomAccount(t)
+		createdAccounts[i] = createAccount(t, user.Username)
 	}
 
-	accounts, err := services.ListAccounts(1, 5)
+	accounts, err := services.ListAccounts(user.Username, 1, 5)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
@@ -88,7 +88,7 @@ func TestGetAccountsList(t *testing.T) {
 	for i, account := range accounts {
 		require.NotEmpty(t, account)
 
-		require.Equal(t, createdAccounts[i].Owner, account.Owner)
+		require.Equal(t, user.Username, account.Owner)
 		require.Equal(t, createdAccounts[i].Balance, account.Balance)
 		require.True(t, account.ID > 0)
 		require.WithinDuration(t, createdAccounts[i].CreatedAt, account.CreatedAt, time.Second)
@@ -98,8 +98,11 @@ func TestGetAccountsList(t *testing.T) {
 }
 
 func TestTransfer(t *testing.T) {
-	account1 := createRandomAccount(t)
-	account2 := createRandomAccount(t)
+	user1 := createRandomUser(t)
+	user2 := createRandomUser(t)
+	srcOwner := user1.Username
+	account1 := createAccount(t, user1.Username)
+	account2 := createAccount(t, user2.Username)
 
 	concurrentTransactions := 20
 	var amount int32 = 10
@@ -114,7 +117,7 @@ func TestTransfer(t *testing.T) {
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 			}
-			transfer, err := services.Transfer(transferRequest)
+			transfer, err := services.Transfer(srcOwner, transferRequest)
 
 			errorsChan <- err
 			resultsChan <- transfer
@@ -174,8 +177,10 @@ func TestTransfer(t *testing.T) {
 }
 
 func TestTransferDeadLock(t *testing.T) {
-	account1 := createRandomAccount(t)
-	account2 := createRandomAccount(t)
+	user1 := createRandomUser(t)
+	user2 := createRandomUser(t)
+	account1 := createAccount(t, user1.Username)
+	account2 := createAccount(t, user2.Username)
 
 	concurrentTransactions := 20
 	var amount int32 = 10
@@ -186,16 +191,18 @@ func TestTransferDeadLock(t *testing.T) {
 	for i := 0; i < concurrentTransactions; i++ {
 		reverse := i%2 == 0
 		go func(chan models.Transfer, chan error, bool) {
+			srcOwner := account1.Owner
 			fromAccountID, toAccountID := account1.ID, account2.ID
 			if reverse {
 				fromAccountID, toAccountID = toAccountID, fromAccountID
+				srcOwner = account2.Owner
 			}
 			transferRequest := requests.TransferRequest{
 				Amount:        amount,
 				FromAccountID: fromAccountID,
 				ToAccountID:   toAccountID,
 			}
-			transfer, err := services.Transfer(transferRequest)
+			transfer, err := services.Transfer(srcOwner, transferRequest)
 			errorsChan <- err
 			resultsChan <- transfer
 		}(resultsChan, errorsChan, reverse)
