@@ -5,6 +5,7 @@ import (
 	"Simple-Bank/requests"
 	"Simple-Bank/util"
 	"database/sql"
+	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -116,7 +117,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (models
 	return newEntry, nil
 }
 
-func (services *SQLServices) Transfer(req requests.TransferRequest) (models.Transfer, error) {
+func (services *SQLServices) Transfer(srcOwner string, req requests.TransferRequest) (models.Transfer, error) {
 	var newTransfer models.Transfer
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -137,6 +138,10 @@ func (services *SQLServices) Transfer(req requests.TransferRequest) (models.Tran
 			}
 		}
 
+		if srcAccount.Owner != srcOwner {
+			err := fmt.Errorf("user is not the owner of the source account")
+			return err
+		}
 		srcAccount.Balance -= int64(req.Amount)
 		dstAccount.Balance += int64(req.Amount)
 
