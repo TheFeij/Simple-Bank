@@ -41,7 +41,7 @@ func (m *MockServices) EXPECT() *MockServicesMockRecorder {
 }
 
 // CreateAccount mocks base method.
-func (m *MockServices) CreateAccount(arg0 requests.CreateAccountRequest) (models.Account, error) {
+func (m *MockServices) CreateAccount(arg0 string) (models.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAccount", arg0)
 	ret0, _ := ret[0].(models.Account)
@@ -161,33 +161,33 @@ func (mr *MockServicesMockRecorder) GetUser(arg0 any) *gomock.Call {
 }
 
 // ListAccounts mocks base method.
-func (m *MockServices) ListAccounts(arg0 int64, arg1 int8) ([]models.Account, error) {
+func (m *MockServices) ListAccounts(arg0 string, arg1 int64, arg2 int8) ([]models.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAccounts", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListAccounts", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]models.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListAccounts indicates an expected call of ListAccounts.
-func (mr *MockServicesMockRecorder) ListAccounts(arg0, arg1 any) *gomock.Call {
+func (mr *MockServicesMockRecorder) ListAccounts(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccounts", reflect.TypeOf((*MockServices)(nil).ListAccounts), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccounts", reflect.TypeOf((*MockServices)(nil).ListAccounts), arg0, arg1, arg2)
 }
 
 // Transfer mocks base method.
-func (m *MockServices) Transfer(arg0 requests.TransferRequest) (models.Transfer, error) {
+func (m *MockServices) Transfer(arg0 string, arg1 requests.TransferRequest) (models.Transfer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Transfer", arg0)
+	ret := m.ctrl.Call(m, "Transfer", arg0, arg1)
 	ret0, _ := ret[0].(models.Transfer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Transfer indicates an expected call of Transfer.
-func (mr *MockServicesMockRecorder) Transfer(arg0 any) *gomock.Call {
+func (mr *MockServicesMockRecorder) Transfer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transfer", reflect.TypeOf((*MockServices)(nil).Transfer), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transfer", reflect.TypeOf((*MockServices)(nil).Transfer), arg0, arg1)
 }
 
 // WithdrawMoney mocks base method.
