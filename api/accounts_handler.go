@@ -110,3 +110,45 @@ func (handler *Handler) GetAccountsList(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, res)
 }
+
+func (handler *Handler) Transfer(context *gin.Context) {
+	var req requests.TransferRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	fromAccount, err := handler.services.GetAccount(req.FromAccountID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			context.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	authPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if fromAccount.Owner != authPayload.Username {
+		err := fmt.Errorf("source account does not belong to the user")
+		context.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	transfer, err := handler.services.Transfer(req)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	context.JSON(http.StatusOK, responses.TransferResponse{
+		TransferID:      transfer.ID,
+		SrcAccountID:    transfer.FromAccountID,
+		DstAccountID:    transfer.ToAccountID,
+		Amount:          transfer.Amount,
+		CreatedAt:       transfer.CreatedAt,
+		IncomingEntryID: transfer.IncomingEntryID,
+		OutgoingEntryID: transfer.OutgoingEntryID,
+	})
+}
