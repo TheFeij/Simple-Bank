@@ -118,25 +118,9 @@ func (handler *Handler) Transfer(context *gin.Context) {
 		return
 	}
 
-	fromAccount, err := handler.services.GetAccount(req.FromAccountID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			context.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		context.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
 	authPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	if fromAccount.Owner != authPayload.Username {
-		err := fmt.Errorf("source account does not belong to the user")
-		context.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
-	transfer, err := handler.services.Transfer(req)
+	transfer, err := handler.services.Transfer(authPayload.Username, req)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
