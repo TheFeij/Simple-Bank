@@ -25,7 +25,6 @@ func (handler *Handler) CreateUser(context *gin.Context) {
 	if err != nil {
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) {
-			fmt.Println(pgError.ConstraintName)
 			switch pgError.ConstraintName {
 			case "users_pkey", "users_email_key":
 				context.JSON(http.StatusForbidden, errorResponse(err))
