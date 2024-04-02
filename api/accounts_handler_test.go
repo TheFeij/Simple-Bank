@@ -83,6 +83,10 @@ func TestCreateAccount(t *testing.T) {
 
 }
 
+func TestGetAccount(t *testing.T) {
+
+}
+
 func createAccount(owner string) models.Account {
 	return models.Account{
 		ID:        util.RandomInt(1, math.MaxInt64),
