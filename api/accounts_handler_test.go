@@ -3,11 +3,13 @@ package api
 import (
 	mockdb "Simple-Bank/db/mock"
 	"Simple-Bank/db/models"
+	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/token"
 	"Simple-Bank/util"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
@@ -84,7 +86,54 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestGetAccount(t *testing.T) {
+	randomUser, _ := randomUser(t)
+	account := createAccount(randomUser.Username)
 
+	testCases := []struct {
+		name          string
+		req           requests.GetAccountRequest
+		setupAuth     func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker)
+		buildStubs    func(services *mockdb.MockServices, req requests.GetAccountRequest)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			req: requests.GetAccountRequest{
+				ID: account.ID,
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountRequest) {
+				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(account, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchAccount(t, recorder.Body, account)
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			services := mockdb.NewMockServices(controller)
+			testCase.buildStubs(services, testCase.req)
+
+			server := NewTestServer(t, services)
+			recorder := httptest.NewRecorder()
+
+			httpReq, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d", account.ID), nil)
+			require.NoError(t, err)
+
+			testCase.setupAuth(t, httpReq, server.handlers.tokenMaker)
+
+			server.RouterServeHTTP(recorder, httpReq)
+			testCase.checkResponse(t, recorder)
+		})
+	}
 }
 
 func createAccount(owner string) models.Account {
