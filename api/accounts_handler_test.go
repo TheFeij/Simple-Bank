@@ -8,6 +8,7 @@ import (
 	"Simple-Bank/token"
 	"Simple-Bank/util"
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/require"
@@ -139,6 +140,21 @@ func TestGetAccount(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "NotFound",
+			req: requests.GetAccountRequest{
+				ID: account.ID,
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountRequest) {
+				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(account, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
 	}
