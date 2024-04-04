@@ -309,6 +309,75 @@ func TestGetUserAPI(t *testing.T) {
 
 }
 
+func TestLogin(t *testing.T) {
+	randomUser, password := randomUser(t)
+
+	testCases := []struct {
+		name          string
+		req           requests.LoginRequest
+		buildStubs    func(services *mockdb.MockServices, req requests.LoginRequest)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker)
+	}{
+		{
+			name: "OK",
+			req: requests.LoginRequest{
+				Username: randomUser.Username,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.LoginRequest) {
+				services.EXPECT().
+					GetUser(gomock.Eq(req.Username)).
+					Times(1).
+					Return(randomUser, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchLogin(t, recorder.Body, randomUser, tokenMaker)
+			},
+		},
+		{
+			name: "BadRequest",
+			req: requests.LoginRequest{
+				Username: util.RandomEmail(), // emails have @ and are invalid Usernames
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.LoginRequest) {
+				services.EXPECT().
+					GetUser(gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			services := mockdb.NewMockServices(ctrl)
+			testCase.buildStubs(services, testCase.req)
+
+			server := NewTestServer(t, services)
+
+			jsonReq, err := json.Marshal(&testCase.req)
+			require.NoError(t, err)
+
+			httpReq, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewBuffer(jsonReq))
+			require.NoError(t, err)
+
+			recorder := httptest.NewRecorder()
+			server.RouterServeHTTP(recorder, httpReq)
+
+			testCase.checkResponse(t, recorder, server.handlers.tokenMaker)
+		})
+
+	}
+
+}
+
 func randomUser(t *testing.T) (models.User, string) {
 	password := util.RandomPassword()
 	hashedPassword, err := util.HashPassword(password)
@@ -338,4 +407,25 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user models.User) {
 	require.Equal(t, user.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
 	require.Equal(t, user.UpdatedAt.Local().Truncate(time.Second), response.UpdatedAt)
 	require.Equal(t, user.DeletedAt.Time.Truncate(time.Second), response.DeletedAt)
+}
+
+func requireBodyMatchLogin(t *testing.T, body *bytes.Buffer, user models.User, tokenMaker token.Maker) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var loginResponse responses.LoginResponse
+	err = json.Unmarshal(data, &loginResponse)
+
+	response := loginResponse.UserInformation
+	require.NoError(t, err)
+	require.Equal(t, user.Username, response.Username)
+	require.Equal(t, user.FullName, response.FullName)
+	require.Equal(t, user.Email, response.Email)
+	require.Equal(t, user.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
+	require.Equal(t, user.UpdatedAt.Local().Truncate(time.Second), response.UpdatedAt)
+	require.Equal(t, user.DeletedAt.Time.Truncate(time.Second), response.DeletedAt)
+
+	accessToken := loginResponse.AccessToken
+	_, err = tokenMaker.VerifyToken(accessToken)
+	require.NoError(t, err)
 }
