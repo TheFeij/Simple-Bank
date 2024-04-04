@@ -5,6 +5,7 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
+	"Simple-Bank/token"
 	"Simple-Bank/util"
 	"bytes"
 	"database/sql"
@@ -209,6 +210,7 @@ func TestGetUserAPI(t *testing.T) {
 		name          string
 		username      string
 		buildStubs    func(services *mockdb.MockServices, username string)
+		setupAuth     func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -219,6 +221,9 @@ func TestGetUserAPI(t *testing.T) {
 					GetUser(gomock.Eq(username)).
 					Times(1).
 					Return(createdUser, nil)
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, createdUser.Username, time.Minute, httpReq)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -234,6 +239,9 @@ func TestGetUserAPI(t *testing.T) {
 					Times(1).
 					Return(models.User{}, sql.ErrNoRows)
 			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, createdUser.Username, time.Minute, httpReq)
+			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
@@ -247,6 +255,9 @@ func TestGetUserAPI(t *testing.T) {
 					Times(1).
 					Return(models.User{}, sql.ErrConnDone)
 			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, createdUser.Username, time.Minute, httpReq)
+			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
@@ -258,6 +269,9 @@ func TestGetUserAPI(t *testing.T) {
 				services.EXPECT().
 					GetUser(gomock.Any()).
 					Times(0)
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, createdUser.Username, time.Minute, httpReq)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -284,6 +298,8 @@ func TestGetUserAPI(t *testing.T) {
 
 			httpReq, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
+
+			testCase.setupAuth(t, httpReq, server.handlers.tokenMaker)
 
 			server.RouterServeHTTP(recorder, httpReq)
 			testCase.checkResponse(t, recorder)
