@@ -528,5 +528,5 @@ func requireBodyMatchTransfer(t *testing.T, body *bytes.Buffer, transfer models.
 	require.Equal(t, transfer.Amount, response.Amount)
 	require.Equal(t, transfer.IncomingEntryID, response.IncomingEntryID)
 	require.Equal(t, transfer.OutgoingEntryID, response.OutgoingEntryID)
-	require.Equal(t, transfer.CreatedAt.Local().Truncate(time.Second), response.CreatedAt.Truncate(time.Second))
+	require.Equal(t, transfer.CreatedAt.Local().Truncate(time.Second), response.CreatedAt.Local().Truncate(time.Second))
 }
