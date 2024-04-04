@@ -391,7 +391,6 @@ func TestTransfer(t *testing.T) {
 				services.EXPECT().Transfer(gomock.Eq(user1.Username), gomock.Eq(req)).Return(transfer, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				fmt.Println(recorder.Code)
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchTransfer(t, recorder.Body, transfer)
 			},
