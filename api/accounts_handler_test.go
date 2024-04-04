@@ -388,7 +388,7 @@ func TestTransfer(t *testing.T) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute, httpReq)
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.TransferRequest) {
-				services.EXPECT().Transfer(gomock.Eq(user1.Username), gomock.Eq(req)).Return(transfer, nil)
+				services.EXPECT().Transfer(gomock.Eq(user1.Username), gomock.Eq(req)).Times(1).Return(transfer, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
