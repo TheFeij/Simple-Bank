@@ -166,7 +166,7 @@ func TestGetAccount(t *testing.T) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountRequest) {
-				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(account, sql.ErrNoRows)
+				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(models.Account{}, sql.ErrNoRows)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -181,7 +181,7 @@ func TestGetAccount(t *testing.T) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountRequest) {
-				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(account, sql.ErrConnDone)
+				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(models.Account{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
