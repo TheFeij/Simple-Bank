@@ -350,6 +350,22 @@ func TestLogin(t *testing.T) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
+		{
+			name: "NotFound",
+			req: requests.LoginRequest{
+				Username: randomUser.Username,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.LoginRequest) {
+				services.EXPECT().
+					GetUser(gomock.Eq(req.Username)).
+					Times(1).
+					Return(models.User{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
