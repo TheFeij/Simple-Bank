@@ -126,6 +126,21 @@ func TestGetAccount(t *testing.T) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
+		{
+			name: "BadRequest",
+			req: requests.GetAccountRequest{
+				ID: -account.ID,
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountRequest) {
+				services.EXPECT().GetAccount(gomock.Any()).Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -139,7 +154,7 @@ func TestGetAccount(t *testing.T) {
 			server := NewTestServer(t, services)
 			recorder := httptest.NewRecorder()
 
-			httpReq, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d", account.ID), nil)
+			httpReq, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d", testCase.req.ID), nil)
 			require.NoError(t, err)
 
 			testCase.setupAuth(t, httpReq, server.handlers.tokenMaker)
