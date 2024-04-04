@@ -411,6 +411,23 @@ func TestTransfer(t *testing.T) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
+		{
+			name: "BadRequest",
+			req: requests.TransferRequest{
+				FromAccountID: account1.ID,
+				ToAccountID:   account2.ID,
+				Amount:        -amount,
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.TransferRequest) {
+				services.EXPECT().Transfer(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
