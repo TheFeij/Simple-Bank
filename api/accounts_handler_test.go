@@ -112,6 +112,20 @@ func TestGetAccount(t *testing.T) {
 				requireBodyMatchAccount(t, recorder.Body, account)
 			},
 		},
+		{
+			name: "UnAuthorized",
+			req: requests.GetAccountRequest{
+				ID: account.ID,
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountRequest) {
+				services.EXPECT().GetAccount(gomock.Any()).Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
