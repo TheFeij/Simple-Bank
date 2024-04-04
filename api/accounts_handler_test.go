@@ -351,6 +351,79 @@ func TestGetAccountsList(t *testing.T) {
 	}
 }
 
+func TestTransfer(t *testing.T) {
+	user1, _ := randomUser(t)
+	user2, _ := randomUser(t)
+
+	account1 := createAccount(user1.Username)
+	account2 := createAccount(user2.Username)
+
+	amount := int32(util.RandomInt(1, math.MaxInt32))
+
+	transfer := models.Transfer{
+		ID:              util.RandomID(),
+		FromAccountID:   account1.ID,
+		ToAccountID:     account2.ID,
+		Amount:          amount,
+		OutgoingEntryID: util.RandomID(),
+		IncomingEntryID: util.RandomID(),
+		CreatedAt:       time.Now().UTC(),
+	}
+
+	testCases := []struct {
+		name          string
+		req           requests.TransferRequest
+		setupAuth     func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker)
+		buildStubs    func(services *mockdb.MockServices, req requests.TransferRequest)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			req: requests.TransferRequest{
+				FromAccountID: account1.ID,
+				ToAccountID:   account2.ID,
+				Amount:        amount,
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.TransferRequest) {
+				services.EXPECT().Transfer(gomock.Eq(user1.Username), gomock.Eq(req)).Return(transfer, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				fmt.Println(recorder.Code)
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchTransfer(t, recorder.Body, transfer)
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			services := mockdb.NewMockServices(controller)
+			testCase.buildStubs(services, testCase.req)
+
+			server := NewTestServer(t, services)
+
+			jsonReq, err := json.Marshal(&testCase.req)
+			require.NoError(t, err)
+
+			httpReq, err := http.NewRequest(http.MethodPost, "/accounts/transfer", bytes.NewBuffer(jsonReq))
+			require.NoError(t, err)
+
+			testCase.setupAuth(t, httpReq, server.handlers.tokenMaker)
+
+			recorder := httptest.NewRecorder()
+			server.RouterServeHTTP(recorder, httpReq)
+
+			testCase.checkResponse(t, recorder)
+		})
+	}
+}
+
 func createAccount(owner string) models.Account {
 	return models.Account{
 		ID:        util.RandomInt(1, math.MaxInt64),
@@ -390,4 +463,20 @@ func requireBodyMatchAccountsList(t *testing.T, body *bytes.Buffer, accounts []m
 		require.Equal(t, account.Balance, response.Balance)
 		require.Equal(t, account.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
 	}
+}
+
+func requireBodyMatchTransfer(t *testing.T, body *bytes.Buffer, transfer models.Transfer) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var response responses.TransferResponse
+	err = json.Unmarshal(data, &response)
+	require.NoError(t, err)
+	require.Equal(t, transfer.ID, response.TransferID)
+	require.Equal(t, transfer.FromAccountID, response.SrcAccountID)
+	require.Equal(t, transfer.ToAccountID, response.DstAccountID)
+	require.Equal(t, transfer.Amount, response.Amount)
+	require.Equal(t, transfer.IncomingEntryID, response.IncomingEntryID)
+	require.Equal(t, transfer.OutgoingEntryID, response.OutgoingEntryID)
+	require.Equal(t, transfer.CreatedAt.Local().Truncate(time.Second), response.CreatedAt.Truncate(time.Second))
 }
