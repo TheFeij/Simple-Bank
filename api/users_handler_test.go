@@ -436,8 +436,8 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user models.User) {
 	require.Equal(t, user.Username, response.Username)
 	require.Equal(t, user.FullName, response.FullName)
 	require.Equal(t, user.Email, response.Email)
-	require.Equal(t, user.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
-	require.Equal(t, user.UpdatedAt.Local().Truncate(time.Second), response.UpdatedAt)
+	require.Equal(t, user.CreatedAt.Local().Truncate(time.Second), response.CreatedAt.Local())
+	require.Equal(t, user.UpdatedAt.Local().Truncate(time.Second), response.UpdatedAt.Local())
 	require.Equal(t, user.DeletedAt.Time.Truncate(time.Second), response.DeletedAt)
 }
 
@@ -453,8 +453,8 @@ func requireBodyMatchLogin(t *testing.T, body *bytes.Buffer, user models.User, t
 	require.Equal(t, user.Username, response.Username)
 	require.Equal(t, user.FullName, response.FullName)
 	require.Equal(t, user.Email, response.Email)
-	require.Equal(t, user.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
-	require.Equal(t, user.UpdatedAt.Local().Truncate(time.Second), response.UpdatedAt)
+	require.Equal(t, user.CreatedAt.Local().Truncate(time.Second), response.CreatedAt.Local())
+	require.Equal(t, user.UpdatedAt.Local().Truncate(time.Second), response.UpdatedAt.Local())
 	require.Equal(t, user.DeletedAt.Time.Truncate(time.Second), response.DeletedAt)
 
 	accessToken := loginResponse.AccessToken
