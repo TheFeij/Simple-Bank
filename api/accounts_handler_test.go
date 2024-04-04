@@ -308,6 +308,24 @@ func TestGetAccountsList(t *testing.T) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
+		{
+			name: "InternalServerError",
+			req: requests.GetAccountsListRequest{
+				PageID:   RandomPageID,
+				PageSize: int8(RandomPageSize),
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
+				services.EXPECT().
+					ListAccounts(gomock.Eq(randomUser.Username), gomock.Eq(req.PageID), gomock.Eq(req.PageSize)).
+					Times(1).Return([]models.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
