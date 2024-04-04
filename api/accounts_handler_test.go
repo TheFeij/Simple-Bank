@@ -272,6 +272,24 @@ func TestGetAccountsList(t *testing.T) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
+		{
+			name: "BadRequest",
+			req: requests.GetAccountsListRequest{
+				PageID:   -RandomPageID,
+				PageSize: -int8(RandomPageSize),
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
+				services.EXPECT().
+					ListAccounts(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
