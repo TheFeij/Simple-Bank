@@ -251,9 +251,25 @@ func TestGetAccountsList(t *testing.T) {
 					Times(1).Return(accounts[startIndex:endIndex], nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				fmt.Println(recorder.Code)
 				requireBodyMatchAccountsList(t, recorder.Body, accounts[startIndex:endIndex])
 				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "UnAuthorized",
+			req: requests.GetAccountsListRequest{
+				PageID:   RandomPageID,
+				PageSize: int8(RandomPageSize),
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
+				services.EXPECT().
+					ListAccounts(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 	}
