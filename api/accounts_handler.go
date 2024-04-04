@@ -131,7 +131,7 @@ func (handler *Handler) Transfer(context *gin.Context) {
 		SrcAccountID:    transfer.FromAccountID,
 		DstAccountID:    transfer.ToAccountID,
 		Amount:          transfer.Amount,
-		CreatedAt:       transfer.CreatedAt,
+		CreatedAt:       transfer.CreatedAt.Local(),
 		IncomingEntryID: transfer.IncomingEntryID,
 		OutgoingEntryID: transfer.OutgoingEntryID,
 	})
