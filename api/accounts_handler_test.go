@@ -495,7 +495,7 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account models.Ac
 	require.Equal(t, account.ID, response.AccountID)
 	require.Equal(t, account.Owner, response.Owner)
 	require.Equal(t, account.Balance, response.Balance)
-	require.Equal(t, account.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
+	require.Equal(t, account.CreatedAt.Local().Truncate(time.Second), response.CreatedAt.Local())
 }
 
 func requireBodyMatchAccountsList(t *testing.T, body *bytes.Buffer, accounts []models.Account) {
