@@ -211,6 +211,76 @@ func TestGetAccount(t *testing.T) {
 	}
 }
 
+func TestGetAccountsList(t *testing.T) {
+	randomUser, _ := randomUser(t)
+	numberOfAccounts := 20
+	accounts := make([]models.Account, numberOfAccounts)
+	for i := 0; i < numberOfAccounts; i++ {
+		accounts[i] = createAccount(randomUser.Username)
+	}
+
+	RandomPageSize := util.RandomInt(5, 10)
+	RandomPageID := util.RandomInt(1, int64(math.Ceil(float64(numberOfAccounts)/float64(RandomPageSize))))
+
+	startIndex := RandomPageSize * (RandomPageID - 1)
+	endIndex := RandomPageSize*(RandomPageID-1) + RandomPageSize
+
+	if endIndex > int64(len(accounts)) {
+		endIndex = int64(len(accounts))
+	}
+
+	testCases := []struct {
+		name          string
+		req           requests.GetAccountsListRequest
+		setupAuth     func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker)
+		buildStubs    func(services *mockdb.MockServices, req requests.GetAccountsListRequest)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			req: requests.GetAccountsListRequest{
+				PageID:   RandomPageID,
+				PageSize: int8(RandomPageSize),
+			},
+			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
+				services.EXPECT().
+					ListAccounts(gomock.Eq(randomUser.Username), gomock.Eq(req.PageID), gomock.Eq(req.PageSize)).
+					Times(1).Return(accounts[startIndex:endIndex], nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				fmt.Println(recorder.Code)
+				requireBodyMatchAccountsList(t, recorder.Body, accounts[startIndex:endIndex])
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			services := mockdb.NewMockServices(controller)
+			testCase.buildStubs(services, testCase.req)
+
+			server := NewTestServer(t, services)
+
+			url := fmt.Sprintf("/accounts?page_id=%d&page_size=%d", testCase.req.PageID, testCase.req.PageSize)
+			httpReq, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
+
+			recorder := httptest.NewRecorder()
+
+			testCase.setupAuth(t, httpReq, server.handlers.tokenMaker)
+			server.RouterServeHTTP(recorder, httpReq)
+			testCase.checkResponse(t, recorder)
+		})
+	}
+}
+
 func createAccount(owner string) models.Account {
 	return models.Account{
 		ID:        util.RandomInt(1, math.MaxInt64),
@@ -233,4 +303,21 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account models.Ac
 	require.Equal(t, account.Owner, response.Owner)
 	require.Equal(t, account.Balance, response.Balance)
 	require.Equal(t, account.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
+}
+
+func requireBodyMatchAccountsList(t *testing.T, body *bytes.Buffer, accounts []models.Account) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var responseList responses.ListAccountsResponse
+	err = json.Unmarshal(data, &responseList)
+	require.NoError(t, err)
+
+	for i, account := range accounts {
+		response := responseList.Accounts[i]
+		require.Equal(t, account.ID, response.AccountID)
+		require.Equal(t, account.Owner, response.Owner)
+		require.Equal(t, account.Balance, response.Balance)
+		require.Equal(t, account.CreatedAt.Local().Truncate(time.Second), response.CreatedAt)
+	}
 }
