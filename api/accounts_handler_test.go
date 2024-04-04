@@ -61,6 +61,21 @@ func TestCreateAccount(t *testing.T) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
+		{
+			name: "InternalServerError",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, request)
+			},
+			buildStubs: func(services *mockdb.MockServices) {
+				services.EXPECT().
+					CreateAccount(gomock.Eq(randomUser.Username)).
+					Times(1).
+					Return(account, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
