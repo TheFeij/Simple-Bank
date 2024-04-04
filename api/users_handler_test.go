@@ -366,6 +366,22 @@ func TestLogin(t *testing.T) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
+		{
+			name: "InternalServerError",
+			req: requests.LoginRequest{
+				Username: randomUser.Username,
+				Password: password,
+			},
+			buildStubs: func(services *mockdb.MockServices, req requests.LoginRequest) {
+				services.EXPECT().
+					GetUser(gomock.Eq(req.Username)).
+					Times(1).
+					Return(models.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
