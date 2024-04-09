@@ -11,10 +11,10 @@ func TestLoadConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, config)
 
-	require.Equal(t, "host", config.Server.Host)
-	require.Equal(t, "port", config.Server.Port)
-	require.Equal(t, "source", config.Database.Source)
-	require.Equal(t, "driver", config.Database.Driver)
-	require.Equal(t, "key", config.Token.SymmetricKey)
-	require.Equal(t, 1*time.Minute, config.Token.AccessTokenDuration)
+	require.Equal(t, "host", config.ServerHost)
+	require.Equal(t, "port", config.ServerPort)
+	require.Equal(t, "source", config.DatabaseSource)
+	require.Equal(t, "driver", config.DatabaseDriver)
+	require.Equal(t, "key", config.TokenSymmetricKey)
+	require.Equal(t, 1*time.Minute, config.TokenAccessTokenDuration)
 }

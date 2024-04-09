@@ -1,14 +1,8 @@
 {
-  "DATABASE": {
-    "DRIVER": "driver",
-    "SOURCE": "source"
-  },
-  "SERVER": {
-    "HOST": "host",
-    "PORT": "port"
-  },
-  "TOKEN":{
-    "SYMMETRIC_KEY": "key",
-    "ACCESS_TOKEN_DURATION": "1m"
-  }
+    "DATABASE_DRIVER": "driver",
+    "DATABASE_SOURCE": "source",
+    "SERVER_HOST": "host",
+    "SERVER_PORT": "port",
+    "TOKEN_SYMMETRIC_KEY": "key",
+    "TOKEN_ACCESS_TOKEN_DURATION": "1m"
 }
