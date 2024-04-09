@@ -15,7 +15,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	db.Init(configs.Database.Source)
+	db.Init(configs.DatabaseSource)
 	db := db.GetDB()
 	DB, err := db.DB()
 	if err != nil {
@@ -33,7 +33,7 @@ func main() {
 		log.Fatalln("cannot create server: ", err)
 	}
 
-	if err = server.Start(configs.Server.Host + ":" + configs.Server.Port); err != nil {
+	if err = server.Start(configs.ServerHost + ":" + configs.ServerPort); err != nil {
 		log.Fatalln("cannot start server: ", err)
 	}
 }
