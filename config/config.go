@@ -6,24 +6,12 @@ import (
 )
 
 type Config struct {
-	Database Database `mapstructure:"DATABASE"`
-	Server   Server   `mapstructure:"SERVER"`
-	Token    Token    `mapstructure:"TOKEN"`
-}
-
-type Database struct {
-	Driver string `mapstructure:"DRIVER"`
-	Source string `mapstructure:"SOURCE"`
-}
-
-type Server struct {
-	Host string `mapstructure:"HOST"`
-	Port string `mapstructure:"PORT"`
-}
-
-type Token struct {
-	SymmetricKey        string        `mapstructure:"SYMMETRIC_KEY"`
-	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	DatabaseDriver           string        `mapstructure:"DATABASE_DRIVER"`
+	DatabaseSource           string        `mapstructure:"DATABASE_SOURCE"`
+	ServerHost               string        `mapstructure:"SERVER_HOST"`
+	ServerPort               string        `mapstructure:"SERVER_PORT"`
+	TokenSymmetricKey        string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	TokenAccessTokenDuration time.Duration `mapstructure:"TOKEN_ACCESS_TOKEN_DURATION"`
 }
 
 func LoadConfig(path, name string) (Config, error) {
