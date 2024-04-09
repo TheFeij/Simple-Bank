@@ -121,7 +121,7 @@ func (handler *Handler) Login(context *gin.Context) {
 
 	accessToken, err := handler.tokenMaker.CreateToken(
 		req.Username,
-		handler.config.Token.AccessTokenDuration,
+		handler.config.TokenAccessTokenDuration,
 	)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
