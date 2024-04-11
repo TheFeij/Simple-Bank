@@ -36,13 +36,27 @@ func (handler *Handler) CreateUser(context *gin.Context) {
 		return
 	}
 
-	res := responses.UserInformationResponse{
+	userInformation := responses.UserInformationResponse{
 		Username:  newUser.Username,
 		Email:     newUser.Email,
 		FullName:  newUser.FullName,
 		CreatedAt: newUser.CreatedAt.Local().Truncate(time.Second),
 		UpdatedAt: newUser.UpdatedAt.Local().Truncate(time.Second),
 		DeletedAt: newUser.DeletedAt.Time.Truncate(time.Second),
+	}
+
+	accessToken, err := handler.tokenMaker.CreateToken(
+		userInformation.Username,
+		handler.config.TokenAccessTokenDuration,
+	)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+	context.Header("Authorization", accessToken)
+
+	res := responses.LoginResponse{
+		AccessToken:     accessToken,
+		UserInformation: userInformation,
 	}
 
 	context.JSON(http.StatusOK, res)
