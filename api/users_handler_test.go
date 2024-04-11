@@ -29,7 +29,7 @@ func TestCreateUserAPI(t *testing.T) {
 		name          string
 		req           requests.CreateUserRequest
 		buildStubs    func(services *mockdb.MockServices, req requests.CreateUserRequest)
-		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker)
 	}{
 		{
 			name: "OK",
@@ -45,9 +45,9 @@ func TestCreateUserAPI(t *testing.T) {
 					Times(1).
 					Return(createdUser, nil)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				requireBodyMatchUser(t, recorder.Body, createdUser)
+				requireBodyMatchLogin(t, recorder.Body, createdUser, tokenMaker)
 			},
 		},
 		{
@@ -64,7 +64,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Times(1).
 					Return(models.User{}, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -82,7 +82,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Times(1).
 					Return(models.User{}, &pgconn.PgError{ConstraintName: "users_email_key"})
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
@@ -100,7 +100,7 @@ func TestCreateUserAPI(t *testing.T) {
 					Times(1).
 					Return(models.User{}, &pgconn.PgError{ConstraintName: "users_pkey"})
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
@@ -117,7 +117,7 @@ func TestCreateUserAPI(t *testing.T) {
 					CreateUser(gomock.Any()).
 					Times(0)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -134,7 +134,7 @@ func TestCreateUserAPI(t *testing.T) {
 					CreateUser(gomock.Any()).
 					Times(0)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -151,7 +151,7 @@ func TestCreateUserAPI(t *testing.T) {
 					CreateUser(gomock.Any()).
 					Times(0)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -168,7 +168,7 @@ func TestCreateUserAPI(t *testing.T) {
 					CreateUser(gomock.Any()).
 					Times(0)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -196,7 +196,7 @@ func TestCreateUserAPI(t *testing.T) {
 			require.NoError(t, err)
 
 			server.RouterServeHTTP(recorder, httpReq)
-			testCase.checkResponse(t, recorder)
+			testCase.checkResponse(t, recorder, server.handlers.tokenMaker)
 		})
 
 	}
