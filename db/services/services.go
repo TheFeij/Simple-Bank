@@ -6,6 +6,7 @@ import (
 	"Simple-Bank/util"
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -275,6 +276,26 @@ func (services *SQLServices) GetUser(username string) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+func (services *SQLServices) CreateSession(session models.Session) (models.Session, error) {
+	if err := services.DB.Create(&session).Error; err != nil {
+		return models.Session{}, err
+	}
+
+	return session, nil
+}
+
+func (services *SQLServices) GetSession(id uuid.UUID) (models.Session, error) {
+	var session models.Session
+
+	if err := services.DB.
+		Raw("SELECT * FROM sessions WHERE id = ?", id).
+		Scan(&session).Error; err != nil {
+		return models.Session{}, err
+	}
+
+	return session, nil
 }
 
 func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Account, models.Account, error) {
