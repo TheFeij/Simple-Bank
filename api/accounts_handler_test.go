@@ -86,7 +86,11 @@ func TestCreateAccount(t *testing.T) {
 			services := mockdb.NewMockServices(controller)
 			testCase.buildStubs(services)
 
-			server := NewTestServer(t, services)
+			tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
+			require.NotEmpty(t, tokenMaker)
+			require.NoError(t, err)
+
+			server := NewTestServer(t, services, tokenMaker)
 			recorder := httptest.NewRecorder()
 
 			httpReq, err := http.NewRequest(http.MethodPost, "/accounts", nil)
@@ -197,7 +201,11 @@ func TestGetAccount(t *testing.T) {
 			services := mockdb.NewMockServices(controller)
 			testCase.buildStubs(services, testCase.req)
 
-			server := NewTestServer(t, services)
+			tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
+			require.NoError(t, err)
+			require.NotEmpty(t, tokenMaker)
+
+			server := NewTestServer(t, services, tokenMaker)
 			recorder := httptest.NewRecorder()
 
 			httpReq, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d", testCase.req.ID), nil)
@@ -336,7 +344,11 @@ func TestGetAccountsList(t *testing.T) {
 			services := mockdb.NewMockServices(controller)
 			testCase.buildStubs(services, testCase.req)
 
-			server := NewTestServer(t, services)
+			tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
+			require.NoError(t, err)
+			require.NotEmpty(t, tokenMaker)
+
+			server := NewTestServer(t, services, tokenMaker)
 
 			url := fmt.Sprintf("/accounts?page_id=%d&page_size=%d", testCase.req.PageID, testCase.req.PageSize)
 			httpReq, err := http.NewRequest(http.MethodGet, url, nil)
@@ -456,7 +468,11 @@ func TestTransfer(t *testing.T) {
 			services := mockdb.NewMockServices(controller)
 			testCase.buildStubs(services, testCase.req)
 
-			server := NewTestServer(t, services)
+			tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
+			require.NoError(t, err)
+			require.NotEmpty(t, tokenMaker)
+
+			server := NewTestServer(t, services, tokenMaker)
 
 			jsonReq, err := json.Marshal(&testCase.req)
 			require.NoError(t, err)
