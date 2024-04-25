@@ -302,7 +302,7 @@ func createSession(t *testing.T) models.Session {
 	user := createRandomUser(t)
 
 	session := models.Session{
-		ID:           uuid.UUID{},
+		ID:           uuid.New(),
 		Username:     user.Username,
 		RefreshToken: "refresh token",
 		UserAgent:    "user agent",
