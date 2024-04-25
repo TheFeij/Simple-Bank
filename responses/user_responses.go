@@ -14,6 +14,9 @@ type UserInformationResponse struct {
 }
 
 type LoginResponse struct {
-	AccessToken     string                  `json:"access_token"`
-	UserInformation UserInformationResponse `json:"user_information"`
+	AccessToken           string                  `json:"access_token"`
+	AccessTokenExpiresAt  time.Time               `json:"access_token_expires_at"`
+	RefreshToken          string                  `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time               `json:"refresh_token_expires_at"`
+	UserInformation       UserInformationResponse `json:"user_information"`
 }
