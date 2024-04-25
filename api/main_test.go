@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var configs *config.Config
+
 func NewTestServer(t *testing.T, services services.Services, tokenMaker token.Maker) *Server {
 	server, err := NewServer(getTestConfig(), services, tokenMaker)
 	require.NoError(t, err)
@@ -30,6 +32,7 @@ func getTestConfig() *config.Config {
 
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
+	configs = getTestConfig()
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
