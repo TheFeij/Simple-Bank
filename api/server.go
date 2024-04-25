@@ -49,6 +49,7 @@ func (server *Server) setupRouter() {
 	server.router.POST("/users", server.handlers.CreateUser)
 	authRoutes.GET("/users/:username", server.handlers.GetUser)
 	server.router.POST("/users/login", server.handlers.Login)
+	server.router.POST("/tokens/renew_access_token", server.handlers.RenewAccessToken)
 }
 
 func registerCustomValidators() {
