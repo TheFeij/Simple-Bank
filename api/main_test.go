@@ -3,6 +3,7 @@ package api
 import (
 	"Simple-Bank/config"
 	"Simple-Bank/db/services"
+	"Simple-Bank/token"
 	"Simple-Bank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
@@ -11,17 +12,20 @@ import (
 	"time"
 )
 
-func NewTestServer(t *testing.T, services services.Services) *Server {
-	config := &config.Config{
-		TokenAccessTokenDuration: time.Minute,
-		TokenSymmetricKey:        util.RandomString(32, util.ALL),
-	}
-
-	server, err := NewServer(config, services)
+func NewTestServer(t *testing.T, services services.Services, tokenMaker token.Maker) *Server {
+	server, err := NewServer(getTestConfig(), services, tokenMaker)
 	require.NoError(t, err)
 	require.NotEmpty(t, server)
 
 	return server
+}
+
+func getTestConfig() *config.Config {
+	return &config.Config{
+		TokenAccessTokenDuration:  15 * time.Minute,
+		TokenRefreshTokenDuration: 24 * time.Hour,
+		TokenSymmetricKey:         util.RandomString(32, util.ALL),
+	}
 }
 
 func TestMain(m *testing.M) {
