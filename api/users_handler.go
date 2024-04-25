@@ -57,7 +57,7 @@ func (handler *Handler) CreateUser(context *gin.Context) {
 
 	refreshToken, refreshTokenPayload, err := handler.tokenMaker.CreateToken(
 		req.Username,
-		handler.config.RefreshTokenDuration)
+		handler.config.TokenRefreshTokenDuration)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -173,7 +173,7 @@ func (handler *Handler) Login(context *gin.Context) {
 
 	refreshToken, refreshTokenPayload, err := handler.tokenMaker.CreateToken(
 		req.Username,
-		handler.config.RefreshTokenDuration)
+		handler.config.TokenRefreshTokenDuration)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
