@@ -2,10 +2,12 @@ package api
 
 import (
 	"Simple-Bank/token"
+	mocktokenmaker "Simple-Bank/token/mock"
 	"Simple-Bank/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,24 +20,38 @@ func addAuthorization(
 	authorizationType string,
 	username string,
 	duration time.Duration,
-	request *http.Request) {
-	accessToken, err := tokenMaker.CreateToken(username, duration)
+	request *http.Request,
+) (string, *token.Payload) {
+	accessToken, payload, err := tokenMaker.CreateToken(username, duration)
 	require.NoError(t, err)
+	require.NotEmpty(t, payload)
+	require.NotEmpty(t, accessToken)
 
 	authorizationHeader := fmt.Sprintf("%s %s", authorizationType, accessToken)
 	request.Header.Set(authorizationHeaderKey, authorizationHeader)
+
+	return accessToken, payload
 }
 
 func TestAuthMiddleware(t *testing.T) {
+	configs := getTestConfig()
+
+	var accessTokenPayload *token.Payload
+	var accessToken string
+
 	testCases := []struct {
 		name          string
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(tokenMaker *mocktokenmaker.MockMaker)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, tokenMaker, authorizationTypeBearer, util.RandomUsername(), time.Minute, request)
+				accessToken, accessTokenPayload = addAuthorization(t, tokenMaker, authorizationTypeBearer, util.RandomUsername(), time.Minute, request)
+			},
+			buildStubs: func(tokenMaker *mocktokenmaker.MockMaker) {
+				tokenMaker.EXPECT().VerifyToken(accessToken).Times(1).Return(accessTokenPayload, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -44,6 +60,8 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "NoAuthorization",
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(tokenMaker *mocktokenmaker.MockMaker) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
@@ -54,6 +72,8 @@ func TestAuthMiddleware(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, tokenMaker, "unsupported", util.RandomUsername(), time.Minute, request)
 			},
+			buildStubs: func(tokenMaker *mocktokenmaker.MockMaker) {
+			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
@@ -63,6 +83,8 @@ func TestAuthMiddleware(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, tokenMaker, "", util.RandomUsername(), time.Minute, request)
 			},
+			buildStubs: func(tokenMaker *mocktokenmaker.MockMaker) {
+			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
@@ -70,7 +92,10 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "ExpiredToken",
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, tokenMaker, authorizationTypeBearer, util.RandomUsername(), -time.Minute, request)
+				accessToken, accessTokenPayload = addAuthorization(t, tokenMaker, authorizationTypeBearer, util.RandomUsername(), -time.Minute, request)
+			},
+			buildStubs: func(tokenMaker *mocktokenmaker.MockMaker) {
+				tokenMaker.EXPECT().VerifyToken(accessToken).Times(1).Return(nil, token.ErrExpiredToken)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
@@ -78,14 +103,16 @@ func TestAuthMiddleware(t *testing.T) {
 		},
 	}
 
-	for i := range testCases {
-		testCase := testCases[i]
-
+	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			server := NewTestServer(t, nil)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-			server.router.GET("/auth",
-				authMiddleWare(server.handlers.tokenMaker),
+			mockTokenMaker := mocktokenmaker.NewMockMaker(ctrl)
+
+			server := NewTestServer(t, nil, mockTokenMaker)
+			authRoutes := server.router.Group("/").Use(authMiddleWare(server.handlers.tokenMaker))
+			authRoutes.GET("/auth",
 				func(context *gin.Context) {
 					context.JSON(http.StatusOK, gin.H{})
 				},
@@ -94,7 +121,16 @@ func TestAuthMiddleware(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			request, err := http.NewRequest(http.MethodGet, "/auth", nil)
 			require.NoError(t, err)
-			testCase.setupAuth(t, request, server.handlers.tokenMaker)
+
+			tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
+			require.NoError(t, err)
+			testCase.setupAuth(t, request, tokenMaker)
+
+			// in this test buildStubs must be called after the
+			// setupAuth method so the accessToken and accessTokenPayload
+			// variables are initialized
+			testCase.buildStubs(mockTokenMaker)
+
 			server.router.ServeHTTP(recorder, request)
 			testCase.checkResponse(t, recorder)
 		})

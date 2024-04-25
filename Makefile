@@ -37,8 +37,11 @@ testmigratedown:
 testmigratedown1:
 	 migrate -path ./db/migration -database "postgres://root:1234@localhost:5432/simple_bank_test?sslmode=disable" -verbose down 1
 
-mock:
+mockdb:
 	mockgen -package mockdb -destination db/mock/services.go Simple-Bank/db/services Services
+
+mocktokenmaker:
+	mockgen -package mocktokenmaker -destination token/mock/maker.go Simple-Bank/token Maker
 
 server:
 	go run main.go
@@ -46,6 +49,6 @@ server:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, mock
+.PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, mockdb, mocktokenmaker
 .PHONY: migratedown, migrateup, testmigratedown. testmigrateup, server
 .PHONY: migratedown1, migrateup1, testmigrateup1, testmigratedown1

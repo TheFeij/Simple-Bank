@@ -26,6 +26,7 @@ func TestMain(m *testing.M) {
 	db.Exec("DELETE FROM accounts")
 	db.Exec("DELETE FROM entries")
 	db.Exec("DELETE FROM transfers")
+	db.Exec("DELETE FROM sessions")
 	DB, err := db.DB()
 	if err != nil {
 		log.Fatalln(err)

@@ -5,7 +5,6 @@ import (
 	"Simple-Bank/db/services"
 	"Simple-Bank/requests"
 	"Simple-Bank/token"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -19,12 +18,7 @@ type Server struct {
 	handlers *Handler
 }
 
-func NewServer(config *config.Config, services services.Services) (*Server, error) {
-	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create token maker: %w", err)
-	}
-
+func NewServer(config *config.Config, services services.Services, tokenMaker token.Maker) (*Server, error) {
 	server := &Server{
 		router:   gin.Default(),
 		handlers: New(services, tokenMaker, config),
@@ -49,6 +43,7 @@ func (server *Server) setupRouter() {
 	server.router.POST("/users", server.handlers.CreateUser)
 	authRoutes.GET("/users/:username", server.handlers.GetUser)
 	server.router.POST("/users/login", server.handlers.Login)
+	server.router.POST("/tokens/renew_access_token", server.handlers.RenewAccessToken)
 }
 
 func registerCustomValidators() {

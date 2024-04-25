@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"strings"
@@ -92,4 +93,13 @@ func RandomEmail() string {
 	tld := RandomString(int(RandomInt(2, 5)), LOWERCASE)
 
 	return username + "@" + domain + "." + tld
+}
+
+func RandomIP() string {
+	return fmt.Sprintf("%d.%d.%d.%d\n",
+		RandomInt(0, 255),
+		RandomInt(0, 255),
+		RandomInt(0, 255),
+		RandomInt(0, 255),
+	)
 }

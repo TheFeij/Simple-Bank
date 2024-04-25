@@ -3,6 +3,7 @@ package services
 import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
+	"github.com/google/uuid"
 )
 
 type Services interface {
@@ -17,6 +18,8 @@ type Services interface {
 	GetEntry(id int64) (models.Entry, error)
 	GetUser(username string) (models.User, error)
 	CreateUser(req requests.CreateUserRequest) (models.User, error)
+	GetSession(id uuid.UUID) (models.Session, error)
+	CreateSession(session models.Session) (models.Session, error)
 }
 
 var _ Services = (*SQLServices)(nil)

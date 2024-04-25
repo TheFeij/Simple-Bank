@@ -4,7 +4,9 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 	"testing"
 	"time"
 )
@@ -294,4 +296,54 @@ func TestGetUser(t *testing.T) {
 	require.WithinDuration(t, user.UpdatedAt, res.UpdatedAt, time.Millisecond)
 	require.Equal(t, user.DeletedAt, res.DeletedAt)
 	require.True(t, res.DeletedAt.Time.IsZero())
+}
+
+func createSession(t *testing.T) models.Session {
+	user := createRandomUser(t)
+
+	session := models.Session{
+		ID:           uuid.New(),
+		Username:     user.Username,
+		RefreshToken: "refresh token",
+		UserAgent:    "user agent",
+		ClientIP:     util.RandomIP(),
+		IsBlocked:    false,
+		CreatedAt:    time.Now(),
+		ExpiresAt:    time.Now(),
+		DeletedAt:    gorm.DeletedAt{},
+	}
+
+	returnedSession, err := services.CreateSession(session)
+	require.NoError(t, err)
+
+	require.Equal(t, session.ID, returnedSession.ID)
+	require.Equal(t, session.UserAgent, returnedSession.UserAgent)
+	require.Equal(t, session.ClientIP, returnedSession.ClientIP)
+	require.Equal(t, session.Username, returnedSession.Username)
+	require.WithinDuration(t, session.CreatedAt, returnedSession.CreatedAt, time.Second)
+	require.WithinDuration(t, session.ExpiresAt, returnedSession.ExpiresAt, time.Second)
+	require.Equal(t, session.DeletedAt, returnedSession.DeletedAt)
+	require.Equal(t, session.IsBlocked, returnedSession.IsBlocked)
+
+	return session
+}
+
+func TestSQLServices_CreateSession(t *testing.T) {
+	createSession(t)
+}
+
+func TestSQLServices_Session(t *testing.T) {
+	session := createSession(t)
+
+	returnedSession, err := services.GetSession(session.ID)
+	require.NoError(t, err)
+
+	require.Equal(t, session.ID, returnedSession.ID)
+	require.Equal(t, session.UserAgent, returnedSession.UserAgent)
+	require.Equal(t, session.ClientIP, returnedSession.ClientIP)
+	require.Equal(t, session.Username, returnedSession.Username)
+	require.WithinDuration(t, session.CreatedAt, returnedSession.CreatedAt, time.Second)
+	require.WithinDuration(t, session.ExpiresAt, returnedSession.ExpiresAt, time.Second)
+	require.Equal(t, session.DeletedAt, returnedSession.DeletedAt)
+	require.Equal(t, session.IsBlocked, returnedSession.IsBlocked)
 }

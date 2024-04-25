@@ -14,6 +14,7 @@ import (
 	requests "Simple-Bank/requests"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -53,6 +54,21 @@ func (m *MockServices) CreateAccount(arg0 string) (models.Account, error) {
 func (mr *MockServicesMockRecorder) CreateAccount(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccount", reflect.TypeOf((*MockServices)(nil).CreateAccount), arg0)
+}
+
+// CreateSession mocks base method.
+func (m *MockServices) CreateSession(arg0 models.Session) (models.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSession", arg0)
+	ret0, _ := ret[0].(models.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSession indicates an expected call of CreateSession.
+func (mr *MockServicesMockRecorder) CreateSession(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSession", reflect.TypeOf((*MockServices)(nil).CreateSession), arg0)
 }
 
 // CreateUser mocks base method.
@@ -128,6 +144,21 @@ func (m *MockServices) GetEntry(arg0 int64) (models.Entry, error) {
 func (mr *MockServicesMockRecorder) GetEntry(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEntry", reflect.TypeOf((*MockServices)(nil).GetEntry), arg0)
+}
+
+// GetSession mocks base method.
+func (m *MockServices) GetSession(arg0 uuid.UUID) (models.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSession", arg0)
+	ret0, _ := ret[0].(models.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSession indicates an expected call of GetSession.
+func (mr *MockServicesMockRecorder) GetSession(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSession", reflect.TypeOf((*MockServices)(nil).GetSession), arg0)
 }
 
 // GetTransfer mocks base method.
