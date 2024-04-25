@@ -5,6 +5,7 @@ import (
 	"Simple-Bank/config"
 	"Simple-Bank/db"
 	"Simple-Bank/db/services"
+	"Simple-Bank/token"
 	"database/sql"
 	"log"
 )
@@ -28,7 +29,12 @@ func main() {
 		}
 	}(DB)
 
-	server, err := api.NewServer(&configs, services.NewSQLServices(db))
+	tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
+	if err != nil {
+		log.Fatalf("cannot create token maker: %w", err)
+	}
+
+	server, err := api.NewServer(&configs, services.NewSQLServices(db), tokenMaker)
 	if err != nil {
 		log.Fatalln("cannot create server: ", err)
 	}
