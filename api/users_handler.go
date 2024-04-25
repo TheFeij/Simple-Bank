@@ -1,6 +1,7 @@
 package api
 
 import (
+	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/token"
@@ -10,6 +11,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 )
@@ -45,20 +47,47 @@ func (handler *Handler) CreateUser(context *gin.Context) {
 		DeletedAt: newUser.DeletedAt.Time.Truncate(time.Second),
 	}
 
-	accessToken, err := handler.tokenMaker.CreateToken(
+	accessToken, accessTokenPayload, err := handler.tokenMaker.CreateToken(
 		userInformation.Username,
 		handler.config.TokenAccessTokenDuration,
 	)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
-	context.Header("Authorization", accessToken)
 
-	res := responses.LoginResponse{
-		AccessToken:     accessToken,
-		UserInformation: userInformation,
+	refreshToken, refreshTokenPayload, err := handler.tokenMaker.CreateToken(
+		req.Username,
+		handler.config.RefreshTokenDuration)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
+	session := models.Session{
+		ID:           refreshTokenPayload.ID,
+		Username:     req.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    context.Request.UserAgent(),
+		ClientIP:     context.ClientIP(),
+		IsBlocked:    false,
+		CreatedAt:    time.Now().UTC(),
+		ExpiresAt:    time.Now().UTC(),
+		DeletedAt:    gorm.DeletedAt{},
+	}
+	session, err = handler.services.CreateSession(session)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	res := responses.LoginResponse{
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
+		SessionID:             session.ID,
+		UserInformation:       userInformation,
+	}
 	context.JSON(http.StatusOK, res)
 }
 
@@ -133,17 +162,47 @@ func (handler *Handler) Login(context *gin.Context) {
 		UpdatedAt: user.CreatedAt.Local().Truncate(time.Second),
 	}
 
-	accessToken, err := handler.tokenMaker.CreateToken(
+	accessToken, accessTokenPayload, err := handler.tokenMaker.CreateToken(
 		req.Username,
 		handler.config.TokenAccessTokenDuration,
 	)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	refreshToken, refreshTokenPayload, err := handler.tokenMaker.CreateToken(
+		req.Username,
+		handler.config.RefreshTokenDuration)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session := models.Session{
+		ID:           refreshTokenPayload.ID,
+		Username:     req.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    context.Request.UserAgent(),
+		ClientIP:     context.ClientIP(),
+		IsBlocked:    false,
+		CreatedAt:    time.Now().UTC(),
+		ExpiresAt:    time.Now().UTC(),
+		DeletedAt:    gorm.DeletedAt{},
+	}
+	session, err = handler.services.CreateSession(session)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	response := responses.LoginResponse{
-		UserInformation: userInformation,
-		AccessToken:     accessToken,
+		UserInformation:       userInformation,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
+		SessionID:             session.ID,
 	}
 	context.JSON(http.StatusOK, response)
 }
