@@ -31,7 +31,7 @@ func main() {
 
 	tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
 	if err != nil {
-		log.Fatalf("cannot create token maker: %w", err)
+		log.Fatalf("cannot create token maker: %v", err)
 	}
 
 	server, err := api.NewServer(&configs, services.NewSQLServices(db), tokenMaker)
