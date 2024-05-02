@@ -44,7 +44,7 @@ func runGinServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
 		log.Fatalln("cannot create server: ", err)
 	}
 
-	if err = server.Start(config.ServerHost + ":" + config.ServerPort); err != nil {
+	if err = server.Start(config.HTTPServerHost + ":" + config.HTTPServerPort); err != nil {
 		log.Fatalln("cannot start server: ", err)
 	}
 }
