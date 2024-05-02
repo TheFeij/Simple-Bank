@@ -49,6 +49,12 @@ server:
 test:
 	go test -v -cover ./...
 
+proto:
+	rm -f pb/*.go
+	protoc --go_out=pb --proto_path=proto --go_opt=paths=source_relative \
+        --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+        proto/*.proto
+
 .PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, mockdb, mocktokenmaker
 .PHONY: migratedown, migrateup, testmigratedown. testmigrateup, server
-.PHONY: migratedown1, migrateup1, testmigrateup1, testmigratedown1
+.PHONY: migratedown1, migrateup1, testmigrateup1, testmigratedown1, proto
