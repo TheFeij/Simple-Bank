@@ -7,6 +7,7 @@ import (
 	"Simple-Bank/db/services"
 	"Simple-Bank/token"
 	"database/sql"
+	"gorm.io/gorm"
 	"log"
 )
 
@@ -34,12 +35,16 @@ func main() {
 		log.Fatalf("cannot create token maker: %v", err)
 	}
 
-	server, err := api.NewServer(&configs, services.NewSQLServices(db), tokenMaker)
+	runGinServer(configs, tokenMaker, db)
+}
+
+func runGinServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
+	server, err := api.NewServer(&config, services.NewSQLServices(db), tokenMaker)
 	if err != nil {
 		log.Fatalln("cannot create server: ", err)
 	}
 
-	if err = server.Start(configs.ServerHost + ":" + configs.ServerPort); err != nil {
+	if err = server.Start(config.ServerHost + ":" + config.ServerPort); err != nil {
 		log.Fatalln("cannot start server: ", err)
 	}
 }
