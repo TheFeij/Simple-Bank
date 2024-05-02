@@ -53,6 +53,7 @@ proto:
 	rm -f pb/*.go
 	protoc --go_out=pb --proto_path=proto --go_opt=paths=source_relative \
         --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+        --grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
         proto/*.proto
 
 .PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, mockdb, mocktokenmaker
