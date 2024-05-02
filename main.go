@@ -5,10 +5,15 @@ import (
 	"Simple-Bank/config"
 	"Simple-Bank/db"
 	"Simple-Bank/db/services"
+	"Simple-Bank/grpc_api"
+	"Simple-Bank/pb"
 	"Simple-Bank/token"
 	"database/sql"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"gorm.io/gorm"
 	"log"
+	"net"
 )
 
 func main() {
@@ -35,7 +40,8 @@ func main() {
 		log.Fatalf("cannot create token maker: %v", err)
 	}
 
-	runGinServer(configs, tokenMaker, db)
+	//runGinServer(configs, tokenMaker, db)
+	runGrpcServer(configs, tokenMaker, db)
 }
 
 func runGinServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
@@ -46,5 +52,25 @@ func runGinServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
 
 	if err = server.Start(config.HTTPServerHost + ":" + config.HTTPServerPort); err != nil {
 		log.Fatalln("cannot start server: ", err)
+	}
+}
+
+func runGrpcServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
+	server := grpc_api.NewServer(&config, services.NewSQLServices(db), tokenMaker)
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterSimpleBankServer(grpcServer, server)
+	reflection.Register(grpcServer)
+
+	serverAddress := config.GrpcServerHost + ":" + config.GrpcServerPort
+	listener, err := net.Listen("tcp", serverAddress)
+	if err != nil {
+		log.Fatalln("cannot create listener: ", err)
+	}
+
+	log.Println("grpc server started at " + listener.Addr().String())
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		log.Fatalln("cannot create grpc server ", err)
 	}
 }
