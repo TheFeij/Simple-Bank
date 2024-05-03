@@ -42,12 +42,13 @@ func (server *GrpcServer) LoginUser(context context.Context, req *pb.LoginUserRe
 		return nil, status.Errorf(codes.Internal, "failed to create refresh token")
 	}
 
+	metadata := server.extractMetaData(context)
 	session := models.Session{
 		ID:           refreshTokenPayload.ID,
 		Username:     req.Username,
 		RefreshToken: refreshToken,
-		UserAgent:    "",
-		ClientIP:     "",
+		UserAgent:    metadata.userAgent,
+		ClientIP:     metadata.clientIP,
 		IsBlocked:    false,
 		CreatedAt:    time.Now().UTC(),
 		ExpiresAt:    time.Now().UTC(),
