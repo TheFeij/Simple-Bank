@@ -6,7 +6,7 @@ import (
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 )
 
-func ValidateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := util.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}
@@ -23,7 +23,7 @@ func ValidateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdeta
 	return violations
 }
 
-func ValidateLoginUseRequest(req *pb.LoginUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+func validateLoginUseRequest(req *pb.LoginUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := util.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}
