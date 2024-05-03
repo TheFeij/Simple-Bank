@@ -1,12 +1,13 @@
-package util
+package api
 
 import (
+	"Simple-Bank/util"
 	"github.com/go-playground/validator/v10"
 )
 
 var ValidUsername validator.Func = func(fl validator.FieldLevel) bool {
 	if username, ok := fl.Field().Interface().(string); ok {
-		if err := validateUsername(username); err != nil {
+		if err := util.ValidateUsername(username); err != nil {
 			return false
 		}
 		return true
@@ -16,7 +17,7 @@ var ValidUsername validator.Func = func(fl validator.FieldLevel) bool {
 
 var ValidPassword validator.Func = func(fl validator.FieldLevel) bool {
 	if password, ok := fl.Field().Interface().(string); ok {
-		if err := validatePassword(password); err != nil {
+		if err := util.ValidatePassword(password); err != nil {
 			return false
 		}
 		return true
@@ -26,7 +27,7 @@ var ValidPassword validator.Func = func(fl validator.FieldLevel) bool {
 
 var ValidFullname validator.Func = func(fl validator.FieldLevel) bool {
 	if fullname, ok := fl.Field().Interface().(string); ok {
-		if err := validateFullname(fullname); err != nil {
+		if err := util.ValidateFullname(fullname); err != nil {
 			return false
 		}
 		return true
