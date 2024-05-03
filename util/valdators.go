@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func validateUsername(username string) error {
+func ValidateUsername(username string) error {
 	if len(username) < 4 {
 		return fmt.Errorf("username must be at least 4 characters")
 	}
@@ -21,7 +21,7 @@ func validateUsername(username string) error {
 	return nil
 }
 
-func validatePassword(password string) error {
+func ValidatePassword(password string) error {
 	if len(password) < 8 {
 		return fmt.Errorf("password must be at least 8 characters")
 	}
@@ -48,7 +48,7 @@ func validatePassword(password string) error {
 	return nil
 }
 
-func validateFullname(fullname string) error {
+func ValidateFullname(fullname string) error {
 	if len(fullname) < 3 {
 		return fmt.Errorf("fullname must be at least 3 characters")
 	}
@@ -63,7 +63,7 @@ func validateFullname(fullname string) error {
 	return nil
 }
 
-func validateEmail(email string) error {
+func ValidateEmail(email string) error {
 	if _, err := mail.ParseAddress(email); err != nil {
 		return fmt.Errorf("invalid email address")
 	}
