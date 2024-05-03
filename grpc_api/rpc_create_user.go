@@ -11,7 +11,7 @@ import (
 )
 
 func (server *GrpcServer) CreateUser(context context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	violations := ValidateCreateUserRequest(req)
+	violations := validateCreateUserRequest(req)
 	if violations != nil {
 		err := invalidArgumentError(violations)
 		return nil, err
