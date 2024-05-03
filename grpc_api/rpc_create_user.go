@@ -11,6 +11,12 @@ import (
 )
 
 func (server *GrpcServer) CreateUser(context context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	violations := ValidateCreateUserRequest(req)
+	if violations != nil {
+		err := invalidArgumentError(violations)
+		return nil, err
+	}
+
 	newUser, err := server.dbServices.CreateUser(requests.CreateUserRequest{
 		Username: req.GetUsername(),
 		Password: req.GetPassword(),
