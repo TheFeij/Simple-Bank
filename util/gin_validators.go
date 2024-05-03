@@ -2,43 +2,23 @@ package util
 
 import (
 	"github.com/go-playground/validator/v10"
-	"regexp"
 )
 
 var ValidUsername validator.Func = func(fl validator.FieldLevel) bool {
 	if username, ok := fl.Field().Interface().(string); ok {
-		if len(username) < 4 || len(username) > 64 {
+		if err := validateUsername(username); err != nil {
 			return false
 		}
-
-		match, _ := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9_]*[a-zA-Z0-9]$", username)
-		return match
+		return true
 	}
 	return false
 }
 
 var ValidPassword validator.Func = func(fl validator.FieldLevel) bool {
 	if password, ok := fl.Field().Interface().(string); ok {
-		if len(password) < 8 || len(password) > 64 {
+		if err := validatePassword(password); err != nil {
 			return false
 		}
-
-		if match, _ := regexp.MatchString("^[a-zA-Z0-9_!@#$%&*^.]*$", password); !match {
-			return false
-		}
-		if match, _ := regexp.MatchString("^.*[a-z].*$", password); !match {
-			return false
-		}
-		if match, _ := regexp.MatchString("^.*[A-Z].*$", password); !match {
-			return false
-		}
-		if match, _ := regexp.MatchString("^.*[0-9].*$", password); !match {
-			return false
-		}
-		if match, _ := regexp.MatchString("^.*[_!@#$%&*^.].*$", password); !match {
-			return false
-		}
-
 		return true
 	}
 	return false
@@ -46,14 +26,9 @@ var ValidPassword validator.Func = func(fl validator.FieldLevel) bool {
 
 var ValidFullname validator.Func = func(fl validator.FieldLevel) bool {
 	if fullname, ok := fl.Field().Interface().(string); ok {
-		if len(fullname) < 3 || len(fullname) > 64 {
+		if err := validateFullname(fullname); err != nil {
 			return false
 		}
-
-		if match, _ := regexp.MatchString("^[a-zA-Z]+([\\s][a-zA-Z]+)*$", fullname); !match {
-			return false
-		}
-
 		return true
 	}
 	return false
