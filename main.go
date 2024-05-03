@@ -103,6 +103,9 @@ func runGrpcGatewayServer(config config.Config, tokenMaker token.Maker, db *gorm
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
 
+	fs := http.FileServer(http.Dir("./doc/swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+
 	serverAddress := config.HTTPServerHost + ":" + config.HTTPServerPort
 	listener, err := net.Listen("tcp", serverAddress)
 	if err != nil {
