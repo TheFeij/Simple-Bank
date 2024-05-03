@@ -22,3 +22,14 @@ func ValidateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdeta
 
 	return violations
 }
+
+func ValidateLoginUseRequest(req *pb.LoginUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := util.ValidateUsername(req.GetUsername()); err != nil {
+		violations = append(violations, fieldViolation("username", err))
+	}
+	if err := util.ValidatePassword(req.GetPassword()); err != nil {
+		violations = append(violations, fieldViolation("password", err))
+	}
+
+	return violations
+}
