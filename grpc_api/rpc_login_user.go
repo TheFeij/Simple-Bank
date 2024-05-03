@@ -15,6 +15,11 @@ import (
 )
 
 func (server *GrpcServer) LoginUser(context context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
+	violations := validateLoginUseRequest(req)
+	if violations != nil {
+		return nil, invalidArgumentError(violations)
+	}
+
 	user, err := server.dbServices.GetUser(req.GetUsername())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
