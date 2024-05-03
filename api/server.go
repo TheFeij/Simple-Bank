@@ -3,8 +3,8 @@ package api
 import (
 	"Simple-Bank/config"
 	"Simple-Bank/db/services"
-	"Simple-Bank/requests"
 	"Simple-Bank/token"
+	"Simple-Bank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -48,13 +48,13 @@ func (server *Server) setupRouter() {
 
 func registerCustomValidators() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		if err := v.RegisterValidation("validUsername", requests.ValidUsername); err != nil {
+		if err := v.RegisterValidation("validUsername", util.ValidUsername); err != nil {
 			log.Fatal("could not register validUsername validator")
 		}
-		if err := v.RegisterValidation("validPassword", requests.ValidPassword); err != nil {
+		if err := v.RegisterValidation("validPassword", util.ValidPassword); err != nil {
 			log.Fatal("could not register validPassword validator")
 		}
-		if err := v.RegisterValidation("validFullname", requests.ValidFullname); err != nil {
+		if err := v.RegisterValidation("validFullname", util.ValidFullname); err != nil {
 			log.Fatal("could not register validFullname validator")
 		}
 	}

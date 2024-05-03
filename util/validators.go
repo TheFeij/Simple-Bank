@@ -1,4 +1,4 @@
-package requests
+package util
 
 import (
 	"github.com/go-playground/validator/v10"
