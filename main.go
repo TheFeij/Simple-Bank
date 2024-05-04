@@ -11,6 +11,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -18,12 +19,17 @@ import (
 	"gorm.io/gorm"
 	"net"
 	"net/http"
+	"os"
 )
 
 func main() {
 	configs, err := config.LoadConfig("./config", "config")
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot load configs")
+	}
+
+	if configs.Environment == "development" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	db.Init(configs.DatabaseSource)
