@@ -41,16 +41,17 @@ func (services *SQLServices) CreateAccount(owner string) (models.Account, error)
 func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 	var deletedAccount models.Account
 
-	if err := services.DB.Exec(
-		"UPDATE accounts SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?", id).
-		Error; err != nil {
-		return deletedAccount, err
-	}
+	if err := services.DB.Transaction(func(tx *gorm.DB) error {
+		if err := services.DB.Delete(&deletedAccount, id).Error; err != nil {
+			return err
+		}
 
-	if err := services.DB.
-		Raw("SELECT * FROM accounts WHERE id = ?", id).
-		Scan(&deletedAccount).Error; err != nil {
-		return deletedAccount, err
+		if err := services.DB.Unscoped().First(&deletedAccount, id).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return models.Account{}, err
 	}
 
 	return deletedAccount, nil
