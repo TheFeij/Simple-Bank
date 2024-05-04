@@ -121,7 +121,8 @@ func runGrpcGatewayServer(config config.Config, tokenMaker token.Maker, db *gorm
 	}
 
 	log.Info().Msg("http gateway server started at " + listener.Addr().String())
-	err = http.Serve(listener, mux)
+	handler := grpc_api.HttpLogger(mux)
+	err = http.Serve(listener, handler)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot start HTTP gateway server")
 	}
