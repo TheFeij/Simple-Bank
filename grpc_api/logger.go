@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+// GrpcLogger logs information about gRPC requests and responses.
+// It logs details such as protocol, method, duration, status code, and status text.
 func GrpcLogger(
 	ctx context.Context,
 	req any,
@@ -42,22 +44,27 @@ func GrpcLogger(
 	return resp, err
 }
 
+// ResponseRecorder implements http.ResponseWriter and records information about HTTP responses.
 type ResponseRecorder struct {
 	http.ResponseWriter
 	StatusCode int
 	Body       []byte
 }
 
+// WriteHeader records the status code of the HTTP response.
 func (rec *ResponseRecorder) WriteHeader(statusCode int) {
 	rec.StatusCode = statusCode
 	rec.ResponseWriter.WriteHeader(statusCode)
 }
 
+// Write records the body of the HTTP response into the ResponseRecorder.Body.
 func (rec *ResponseRecorder) Write(body []byte) (int, error) {
 	rec.Body = body
 	return rec.ResponseWriter.Write(body)
 }
 
+// HttpLogger logs information about HTTP requests and responses.
+// It logs details such as protocol, method, path, status code, status text, duration, and response body (in case of non-200 status codes).
 func HttpLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		startTime := time.Now()
