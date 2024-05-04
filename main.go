@@ -63,7 +63,8 @@ func runGinServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
 func runGrpcServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
 	server := grpc_api.NewServer(&config, services.NewSQLServices(db), tokenMaker)
 
-	grpcServer := grpc.NewServer()
+	grpcLogger := grpc.UnaryInterceptor(grpc_api.GrpcLogger)
+	grpcServer := grpc.NewServer(grpcLogger)
 	pb.RegisterSimpleBankServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
