@@ -23,12 +23,14 @@ import (
 )
 
 func main() {
-	// pretty logger for development
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
 	configs, err := config.LoadConfig("./config", "config")
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot load configs")
+	}
+
+	if configs.Environment == "development" {
+		// pretty logger for development
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	db.Init(configs.DatabaseSource)
