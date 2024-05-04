@@ -36,7 +36,6 @@ func (server *GrpcServer) extractMetaData(context context.Context) *Metadata {
 	}
 
 	if p, ok := peer.FromContext(context); ok {
-		fmt.Printf("%+v\n", p)
 		mtdt.clientIP = p.Addr.String()
 	}
 
