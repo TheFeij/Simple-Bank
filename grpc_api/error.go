@@ -24,3 +24,8 @@ func invalidArgumentError(violations []*errdetails.BadRequest_FieldViolation) er
 
 	return statusDetails.Err()
 }
+
+// unAuthenticatedError creates and returns an unauthenticated gRPC error with the input error message.
+func unAuthenticatedError(err error) error {
+	return status.Errorf(codes.Unauthenticated, "unauthorized: %s", err)
+}
