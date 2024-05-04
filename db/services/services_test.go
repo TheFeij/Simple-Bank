@@ -4,6 +4,7 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/util"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -35,42 +36,58 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestGetAccount(t *testing.T) {
-	user := createRandomUser(t)
-	account := createAccount(t, user.Username)
+	t.Run("UserFound", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
 
-	response, err := services.GetAccount(account.ID)
+		response, err := services.GetAccount(account.ID)
 
-	require.NoError(t, err)
-	require.NotEmpty(t, response)
+		require.NoError(t, err)
+		require.NotEmpty(t, response)
 
-	require.Equal(t, account.ID, response.ID)
-	require.Equal(t, account.Balance, response.Balance)
-	require.Equal(t, account.Owner, response.Owner)
-	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
-	require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
-	require.Equal(t, account.DeletedAt, response.DeletedAt)
-	require.True(t, response.DeletedAt.Time.IsZero())
+		require.Equal(t, account.ID, response.ID)
+		require.Equal(t, account.Balance, response.Balance)
+		require.Equal(t, account.Owner, response.Owner)
+		require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+		require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
+		require.Equal(t, account.DeletedAt, response.DeletedAt)
+		require.True(t, response.DeletedAt.Time.IsZero())
+	})
+	t.Run("UserNotFound", func(t *testing.T) {
+		response, err := services.GetAccount(util.RandomID())
+		require.Error(t, err)
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.Empty(t, response)
+	})
 }
 
 func TestDeleteAccount(t *testing.T) {
-	user := createRandomUser(t)
-	account := createAccount(t, user.Username)
+	t.Run("UserDeletedSuccessfully", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
 
-	response, err := services.DeleteAccount(account.ID)
-	require.NoError(t, err)
-	require.NotEmpty(t, response)
-	require.Equal(t, account.ID, response.ID)
-	require.Equal(t, account.Balance, response.Balance)
-	require.Equal(t, account.Owner, response.Owner)
-	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
-	require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
-	require.NotEqual(t, account.DeletedAt, response.DeletedAt)
-	require.False(t, response.DeletedAt.Time.IsZero())
+		response, err := services.DeleteAccount(account.ID)
+		require.NoError(t, err)
+		require.NotEmpty(t, response)
+		require.Equal(t, account.ID, response.ID)
+		require.Equal(t, account.Balance, response.Balance)
+		require.Equal(t, account.Owner, response.Owner)
+		require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+		require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
+		require.WithinDuration(t, time.Now(), response.DeletedAt.Time, time.Second)
+		require.True(t, response.DeletedAt.Valid)
 
-	response, err = services.GetAccount(account.ID)
-	require.NoError(t, err)
-	require.NotEmpty(t, response)
-	require.False(t, response.DeletedAt.Time.IsZero())
+		response, err = services.GetAccount(account.ID)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.Empty(t, response)
+	})
+	t.Run("UserNotFound", func(t *testing.T) {
+		response, err := services.DeleteAccount(util.RandomID())
+		require.Error(t, err)
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.Empty(t, response)
+	})
 }
 
 func TestGetAccountsList(t *testing.T) {
