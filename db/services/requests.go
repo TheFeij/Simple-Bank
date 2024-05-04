@@ -11,3 +11,13 @@ type UpdateUserRequest struct {
 	// New email address for the user (optional).
 	Email *string
 }
+
+// ListAccountsRequest represents a request to get a list of a user's accounts
+type ListAccountsRequest struct {
+	// Owner is the username of the owner of the accounts
+	Owner string
+	// PageSize represents number of accounts in a page
+	PageSize int
+	// PageNumber page number
+	PageNumber int
+}
