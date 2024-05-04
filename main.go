@@ -11,11 +11,11 @@ import (
 	"context"
 	"database/sql"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 	"gorm.io/gorm"
-	"log"
 	"net"
 	"net/http"
 )
@@ -23,25 +23,25 @@ import (
 func main() {
 	configs, err := config.LoadConfig("./config", "config")
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal().Err(err).Msg("cannot load configs")
 	}
 
 	db.Init(configs.DatabaseSource)
 	db := db.GetDB()
 	DB, err := db.DB()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal().Err(err).Msg("cannot get *sql.DB object")
 	}
 	defer func(DB *sql.DB) {
 		err := DB.Close()
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatal().Err(err).Msg("cannot close db connection")
 		}
 	}(DB)
 
 	tokenMaker, err := token.NewPasetoMaker(configs.TokenSymmetricKey)
 	if err != nil {
-		log.Fatalf("cannot create token maker: %v", err)
+		log.Fatal().Err(err).Msg("cannot create token maker")
 	}
 
 	//runGinServer(configs, tokenMaker, db)
@@ -52,11 +52,11 @@ func main() {
 func runGinServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
 	server, err := api.NewServer(&config, services.NewSQLServices(db), tokenMaker)
 	if err != nil {
-		log.Fatalln("cannot create server: ", err)
+		log.Fatal().Err(err).Msg("cannot create server")
 	}
 
 	if err = server.Start(config.HTTPServerHost + ":" + config.HTTPServerPort); err != nil {
-		log.Fatalln("cannot start server: ", err)
+		log.Fatal().Err(err).Msg("cannot start server")
 	}
 }
 
@@ -71,13 +71,13 @@ func runGrpcServer(config config.Config, tokenMaker token.Maker, db *gorm.DB) {
 	serverAddress := config.GrpcServerHost + ":" + config.GrpcServerPort
 	listener, err := net.Listen("tcp", serverAddress)
 	if err != nil {
-		log.Fatalln("cannot create listener: ", err)
+		log.Fatal().Err(err).Msg("cannot create listener")
 	}
 
-	log.Println("grpc server started at " + listener.Addr().String())
+	log.Info().Msg("grpc server started at " + listener.Addr().String())
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatalln("cannot create grpc server ", err)
+		log.Fatal().Err(err).Msg("cannot create grpc server")
 	}
 }
 
@@ -98,7 +98,7 @@ func runGrpcGatewayServer(config config.Config, tokenMaker token.Maker, db *gorm
 
 	err := pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		log.Fatalln("cannot register handler server")
+		log.Fatal().Err(err).Msg("cannot register handler server")
 	}
 
 	mux := http.NewServeMux()
@@ -110,12 +110,12 @@ func runGrpcGatewayServer(config config.Config, tokenMaker token.Maker, db *gorm
 	serverAddress := config.HTTPServerHost + ":" + config.HTTPServerPort
 	listener, err := net.Listen("tcp", serverAddress)
 	if err != nil {
-		log.Fatalln("cannot create listener: ", err)
+		log.Fatal().Err(err).Msg("cannot create listener")
 	}
 
-	log.Println("http gateway server started at " + listener.Addr().String())
+	log.Info().Msg("http gateway server started at " + listener.Addr().String())
 	err = http.Serve(listener, mux)
 	if err != nil {
-		log.Fatalln("cannot start HTTP gateway server ", err)
+		log.Fatal().Err(err).Msg("cannot start HTTP gateway server")
 	}
 }
