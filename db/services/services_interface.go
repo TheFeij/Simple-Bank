@@ -20,7 +20,6 @@ type Services interface {
 	CreateUser(req requests.CreateUserRequest) (models.User, error)
 	GetSession(id uuid.UUID) (models.Session, error)
 	CreateSession(session models.Session) (models.Session, error)
-	UpdateUser(req UpdateUserRequest) (models.User, error)
 }
 
 var _ Services = (*SQLServices)(nil)

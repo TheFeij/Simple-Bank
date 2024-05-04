@@ -1,10 +1,8 @@
 {
     "DATABASE_DRIVER": "driver",
     "DATABASE_SOURCE": "source",
-    "HTTP_SERVER_HOST": "http host",
-    "HTTP_SERVER_PORT": "http port",
-    "GRPC_SERVER_HOST": "grpc host",
-    "GRPC_SERVER_PORT": "grpc port",
+    "SERVER_HOST": "host",
+    "SERVER_PORT": "port",
     "TOKEN_SYMMETRIC_KEY": "key",
     "TOKEN_ACCESS_TOKEN_DURATION": "1m"
 }
