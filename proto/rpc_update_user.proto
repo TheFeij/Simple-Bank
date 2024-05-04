@@ -14,11 +14,11 @@ message UpdateUserRequest {
   // Username of the user to update.
   string username = 1;
   // Full name of the user (optional).
-  string fullname = 2;
+  optional string fullname = 2;
   // New password for the user (optional).
-  string password = 3;
+  optional string password = 3;
   // New email address for the user (optional).
-  string email = 4;
+  optional string email = 4;
 }
 
 // Response message for updating a user.
