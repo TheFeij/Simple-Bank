@@ -5,7 +5,6 @@ import (
 	"Simple-Bank/pb"
 	"Simple-Bank/util"
 	"context"
-	"database/sql"
 	"errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,7 +21,7 @@ func (server *GrpcServer) LoginUser(context context.Context, req *pb.LoginUserRe
 
 	user, err := server.dbServices.GetUser(req.GetUsername())
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
 		return nil, status.Errorf(codes.Internal, "failed to find user")
