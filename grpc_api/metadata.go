@@ -2,7 +2,6 @@ package grpc_api
 
 import (
 	"context"
-	"fmt"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 )
@@ -29,7 +28,7 @@ func (server *GrpcServer) extractMetaData(context context.Context) *Metadata {
 		if userAgents := md.Get(userAgentHeader); len(userAgents) > 0 {
 			mtdt.userAgent = userAgents[0]
 		}
-		fmt.Printf("%+v\n", md)
+
 		if clientIPs := md.Get(xForwardedForHeader); len(clientIPs) > 0 {
 			mtdt.clientIP = clientIPs[0]
 		}
