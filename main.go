@@ -32,7 +32,11 @@ func main() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	db.Init(configs.DatabaseSource)
+	err = db.Init(configs.DatabaseSource)
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot initialize database")
+	}
+
 	db := db.GetDB()
 	DB, err := db.DB()
 	if err != nil {
