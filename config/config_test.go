@@ -18,5 +18,6 @@ func TestLoadConfig(t *testing.T) {
 	require.Equal(t, "source", config.DatabaseSource)
 	require.Equal(t, "driver", config.DatabaseDriver)
 	require.Equal(t, "key", config.TokenSymmetricKey)
+	require.Equal(t, "environment", config.Environment)
 	require.Equal(t, 1*time.Minute, config.TokenAccessTokenDuration)
 }
