@@ -10,6 +10,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// UpdateUser updates the user information based on the provided request.
+// It first authorizes the user using the access token provided in the context.
+// If the user is not authorized, it returns an unauthenticated error.
+// It then validates the update user request, and if there are any validation errors,
+// it returns an invalid argument error.
+// If the user tries to update another user's information, it returns a permission denied error.
+// Otherwise, it updates the user information in the database and returns the updated user in the response.
 func (server *GrpcServer) UpdateUser(context context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 	payload, err := server.authorizeUser(context)
 	if err != nil {
