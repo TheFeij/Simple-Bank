@@ -11,7 +11,8 @@ From alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate .
-COPY  config/config.json /app/config/
+COPY doc/swagger/ /app/doc/swagger/
+COPY config/config.json /app/config/
 COPY db/migration ./migration
 COPY start.sh .
 RUN chmod +x start.sh
