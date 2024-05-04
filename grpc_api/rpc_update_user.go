@@ -11,10 +11,19 @@ import (
 )
 
 func (server *GrpcServer) UpdateUser(context context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	payload, err := server.authorizeUser(context)
+	if err != nil {
+		return nil, unAuthenticatedError(err)
+	}
+
 	violations := validateUpdateUserRequest(req)
 	if violations != nil {
 		err := invalidArgumentError(violations)
 		return nil, err
+	}
+
+	if payload.Username != req.Username {
+		return nil, status.Errorf(codes.PermissionDenied, "cannot update other users info")
 	}
 
 	updatedUser, err := server.dbServices.UpdateUser(services.UpdateUserRequest{
