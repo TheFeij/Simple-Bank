@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+// Package declaration for protocol buffer definitions.
+package pb;
+
+// Importing "user.proto" for referencing User message.
+import "user.proto";
+
+// Specifies the Go package name for generated Go code.
+option go_package = "Simple-Bank/pb";
+
+// Message for updating a user request.
+message UpdateUserRequest {
+  // Username of the user to update.
+  string username = 1;
+  // Full name of the user (optional).
+  string fullname = 2;
+  // New password for the user (optional).
+  string password = 3;
+  // New email address for the user (optional).
+  string email = 4;
+}
+
+// Response message for updating a user.
+message UpdateUserResponse {
+  // Updated user information.
+  User user = 1;
+}
