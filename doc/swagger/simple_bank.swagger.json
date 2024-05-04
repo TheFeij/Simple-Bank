@@ -2,7 +2,8 @@
   "swagger": "2.0",
   "info": {
     "title": "Simple Bank",
-    "version": "1.0",
+    "description": "Package declaration for protocol buffer definitions.",
+    "version": "1.1",
     "contact": {
       "name": "TheFeij",
       "url": "https://github.com/TheFeij",
@@ -23,6 +24,8 @@
   "paths": {
     "/v1/create_user": {
       "post": {
+        "summary": "Create new user",
+        "description": "Use this API to create a new user",
         "operationId": "SimpleBank_CreateUser",
         "responses": {
           "200": {
@@ -55,6 +58,8 @@
     },
     "/v1/login_user": {
       "post": {
+        "summary": "Login user",
+        "description": "Use this API to login",
         "operationId": "SimpleBank_LoginUser",
         "responses": {
           "200": {
@@ -77,6 +82,41 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/pbLoginUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SimpleBank"
+        ]
+      }
+    },
+    "/v1/update_user": {
+      "patch": {
+        "summary": "Update user",
+        "description": "Use this API to update user information",
+        "operationId": "SimpleBank_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Message for updating a user request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbUpdateUserRequest"
             }
           }
         ],
@@ -147,6 +187,38 @@
           "format": "date-time"
         }
       }
+    },
+    "pbUpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Username of the user to update."
+        },
+        "fullname": {
+          "type": "string",
+          "description": "Full name of the user (optional)."
+        },
+        "password": {
+          "type": "string",
+          "description": "New password for the user (optional)."
+        },
+        "email": {
+          "type": "string",
+          "description": "New email address for the user (optional)."
+        }
+      },
+      "description": "Message for updating a user request."
+    },
+    "pbUpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/pbUser",
+          "description": "Updated user information."
+        }
+      },
+      "description": "Response message for updating a user."
     },
     "pbUser": {
       "type": "object",
