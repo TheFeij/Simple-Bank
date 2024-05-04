@@ -30,19 +30,19 @@ func ValidatePassword(password string) error {
 	}
 
 	if match, _ := regexp.MatchString("^[a-zA-Z0-9_!@#$%&*^.]*$", password); !match {
-		fmt.Printf("invalid character in password; only alphabets, digits, and the following special characters are allowed: _!@#$%%&*^.")
+		return fmt.Errorf("invalid character in password; only alphabets, digits, and the following special characters are allowed: _!@#$%%&*.^")
 	}
 	if match, _ := regexp.MatchString("^.*[a-z].*$", password); !match {
-		fmt.Printf("password must have at least one lowercase alphabet")
+		return fmt.Errorf("password must have at least one lowercase alphabet")
 	}
 	if match, _ := regexp.MatchString("^.*[A-Z].*$", password); !match {
-		fmt.Printf("password must have at least one uppercase alphabet")
+		return fmt.Errorf("password must have at least one uppercase alphabet")
 	}
 	if match, _ := regexp.MatchString("^.*[0-9].*$", password); !match {
-		fmt.Printf("password must have at least one digit")
+		return fmt.Errorf("password must have at least one digit")
 	}
 	if match, _ := regexp.MatchString("^.*[_!@#$%&*^.].*$", password); !match {
-		fmt.Printf("password must have at least one of these special character: _!@#$%%&*^.")
+		return fmt.Errorf("password must have at least one of these special character: _!@#$%%&.*^")
 	}
 
 	return nil
