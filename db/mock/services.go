@@ -11,6 +11,7 @@ package mockdb
 
 import (
 	models "Simple-Bank/db/models"
+	services "Simple-Bank/db/services"
 	requests "Simple-Bank/requests"
 	reflect "reflect"
 
@@ -219,6 +220,21 @@ func (m *MockServices) Transfer(arg0 string, arg1 requests.TransferRequest) (mod
 func (mr *MockServicesMockRecorder) Transfer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transfer", reflect.TypeOf((*MockServices)(nil).Transfer), arg0, arg1)
+}
+
+// UpdateUser mocks base method.
+func (m *MockServices) UpdateUser(arg0 services.UpdateUserRequest) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", arg0)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockServicesMockRecorder) UpdateUser(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockServices)(nil).UpdateUser), arg0)
 }
 
 // WithdrawMoney mocks base method.
