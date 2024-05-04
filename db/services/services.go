@@ -4,7 +4,6 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/util"
-	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -189,19 +188,27 @@ func (services *SQLServices) Transfer(srcOwner string, req requests.TransferRequ
 	return newTransfer, nil
 }
 
-func (services *SQLServices) ListAccounts(owner string, pageNumber int64, pageSize int8) ([]models.Account, error) {
+// ListAccounts retrieves a list of accounts owned by a specified user with pagination.
+//
+// It takes a ListAccountsRequest containing information about the owner, page number, and page size.
+// It returns a slice of models.Account representing the accounts retrieved from the database, along with an error if any.
+//
+// If no accounts are found for the specified owner or an error occurs during the database operation,
+// it returns an empty slice of models.Account and the corresponding error.
+func (services *SQLServices) ListAccounts(req ListAccountsRequest) ([]models.Account, error) {
 	var accountsList []models.Account
 
-	offset := (pageNumber - 1) * int64(pageSize)
+	offset := (req.PageNumber - 1) * req.PageSize
 	res := services.DB.
-		Raw("SELECT * FROM accounts WHERE owner = ? LIMIT ? OFFSET ?", owner, pageSize, offset).
-		Scan(&accountsList)
+		Find(&accountsList, "owner = ?", req.Owner).
+		Limit(req.PageSize).
+		Offset(offset)
 
-	if res.RowsAffected == 0 {
-		return accountsList, sql.ErrNoRows
+	if err := res.Error; err != nil {
+		return []models.Account{}, err
 	}
-	if res.Error != nil {
-		return accountsList, res.Error
+	if res.RowsAffected == 0 {
+		return []models.Account{}, ErrNoRecordsFound
 	}
 
 	return accountsList, nil
