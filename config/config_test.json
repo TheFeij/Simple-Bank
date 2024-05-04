@@ -1,4 +1,5 @@
 {
+    "ENVIRONMENT": "environment",
     "DATABASE_DRIVER": "driver",
     "DATABASE_SOURCE": "source",
     "HTTP_SERVER_HOST": "http host",
