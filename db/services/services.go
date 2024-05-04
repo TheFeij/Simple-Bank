@@ -210,15 +210,8 @@ func (services *SQLServices) ListAccounts(owner string, pageNumber int64, pageSi
 func (services *SQLServices) GetAccount(id int64) (models.Account, error) {
 	var account models.Account
 
-	res := services.DB.
-		Raw("SELECT * FROM accounts WHERE id = ?", id).
-		Scan(&account)
-
-	if res.RowsAffected == 0 {
-		return account, sql.ErrNoRows
-	}
-	if res.Error != nil {
-		return account, res.Error
+	if err := services.DB.First(&account, id).Error; err != nil {
+		return models.Account{}, err
 	}
 
 	return account, nil
