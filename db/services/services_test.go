@@ -91,29 +91,45 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestGetAccountsList(t *testing.T) {
-	user := createRandomUser(t)
+	t.Run("OK", func(t *testing.T) {
+		user := createRandomUser(t)
 
-	createdAccounts := make([]models.Account, 5)
-	for i := 0; i < 5; i++ {
-		createdAccounts[i] = createAccount(t, user.Username)
-	}
+		createdAccounts := make([]models.Account, 5)
+		for i := 0; i < 5; i++ {
+			createdAccounts[i] = createAccount(t, user.Username)
+		}
 
-	accounts, err := services.ListAccounts(user.Username, 1, 5)
+		accounts, err := services.ListAccounts(ListAccountsRequest{
+			Owner:      user.Username,
+			PageSize:   1,
+			PageNumber: 5,
+		})
 
-	require.NoError(t, err)
-	require.NotEmpty(t, accounts)
-	require.Len(t, accounts, 5)
+		require.NoError(t, err)
+		require.NotEmpty(t, accounts)
+		require.Len(t, accounts, 5)
 
-	for i, account := range accounts {
-		require.NotEmpty(t, account)
+		for i, account := range accounts {
+			require.NotEmpty(t, account)
 
-		require.Equal(t, user.Username, account.Owner)
-		require.Equal(t, createdAccounts[i].Balance, account.Balance)
-		require.True(t, account.ID > 0)
-		require.WithinDuration(t, createdAccounts[i].CreatedAt, account.CreatedAt, time.Second)
-		require.WithinDuration(t, createdAccounts[i].UpdatedAt, account.UpdatedAt, time.Second)
-		require.True(t, account.DeletedAt.Time.IsZero())
-	}
+			require.Equal(t, user.Username, account.Owner)
+			require.Equal(t, createdAccounts[i].Balance, account.Balance)
+			require.True(t, account.ID > 0)
+			require.WithinDuration(t, createdAccounts[i].CreatedAt, account.CreatedAt, time.Second)
+			require.WithinDuration(t, createdAccounts[i].UpdatedAt, account.UpdatedAt, time.Second)
+			require.True(t, account.DeletedAt.Time.IsZero())
+		}
+	})
+	t.Run("NoAccountsFound", func(t *testing.T) {
+		accounts, err := services.ListAccounts(ListAccountsRequest{
+			Owner:      util.RandomUsername(),
+			PageSize:   1,
+			PageNumber: 5,
+		})
+		require.Empty(t, accounts)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, ErrNoRecordsFound))
+	})
 }
 
 func TestTransfer(t *testing.T) {
