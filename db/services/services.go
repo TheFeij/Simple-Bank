@@ -269,10 +269,8 @@ func (services *SQLServices) CreateUser(req requests.CreateUserRequest) (models.
 func (services *SQLServices) GetUser(username string) (models.User, error) {
 	var user models.User
 
-	if err := services.DB.
-		Raw("SELECT * FROM users WHERE username = ?", username).
-		Scan(&user).Error; err != nil {
-		return user, err
+	if err := services.DB.Model(&models.User{}).Where("username = ?", username).First(&user).Error; err != nil {
+		return models.User{}, err
 	}
 
 	return user, nil
