@@ -296,38 +296,6 @@ func (services *SQLServices) GetSession(id uuid.UUID) (models.Session, error) {
 	return session, nil
 }
 
-// UpdateUser updates the user information in the database based on the provided request.
-// It hashes the password if provided, and updates the fullname and email fields if they are not nil.
-// It returns the updated user model and any error encountered.
-func (services *SQLServices) UpdateUser(req UpdateUserRequest) (models.User, error) {
-	updateData := map[string]interface{}{}
-
-	if req.Password != nil {
-		hashedPassword, err := util.HashPassword(*req.Password)
-		if err != nil {
-			return models.User{}, err
-		}
-		updateData["password"] = hashedPassword
-	}
-	if req.Fullname != nil {
-		updateData["fullname"] = req.Fullname
-	}
-	if req.Email != nil {
-		updateData["email"] = req.Email
-	}
-
-	var user models.User
-	if err := services.DB.
-		Model(&models.User{}).
-		Where("username = ?", req.Username).
-		Updates(updateData).
-		First(&user).Error; err != nil {
-		return models.User{}, err
-	}
-
-	return user, nil
-}
-
 func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Account, models.Account, error) {
 	var lowerAccount, higherAccount models.Account
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).

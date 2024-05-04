@@ -49,15 +49,6 @@ server:
 test:
 	go test -v -cover ./...
 
-proto:
-	rm -f pb/*.go
-	rm -f doc/swagger/*.swagger.json
-	protoc --go_out=pb --proto_path=proto --go_opt=paths=source_relative \
-        --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
-        --grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
-        --openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=simple_bank\
-        proto/*.proto
-
 .PHONY: postgres, createdb, dropdb, createtestdb, droptestdb, mockdb, mocktokenmaker
 .PHONY: migratedown, migrateup, testmigratedown. testmigrateup, server
-.PHONY: migratedown1, migrateup1, testmigrateup1, testmigratedown1, proto
+.PHONY: migratedown1, migrateup1, testmigrateup1, testmigratedown1
