@@ -1,15 +1,23 @@
 syntax = "proto3";
 
+// Package declaration for protocol buffer definitions.
 package pb;
 
+// Importing RPC service definitions.
 import "rpc_create_user.proto";
 import "rpc_login_user.proto";
 import "rpc_update_user.proto";
+
+// Importing Google API annotations for HTTP mapping.
 import "google/api/annotations.proto";
+
+// Importing annotations for generating OpenAPI documentation.
 import "protoc-gen-openapiv2/options/annotations.proto";
 
+// Specifies the Go package name for generated Go code.
 option go_package = "Simple-Bank/pb";
 
+// Specifies OpenAPI metadata for generating Swagger documentation.
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
     title: "Simple Bank";
@@ -22,32 +30,44 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   };
 };
 
+// Service definition for Simple Bank.
 service SimpleBank {
+  // RPC method for creating a user.
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+    // HTTP mapping for creating a user.
     option(google.api.http) = {
       post: "/v1/create_user"
       body: "*"
     };
+    // OpenAPI metadata for creating a user.
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       description: "Use this API to create a new user"
       summary: "Create new user"
     };
   }
+
+  // RPC method for user login.
   rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
+    // HTTP mapping for user login.
     option(google.api.http) = {
       post: "/v1/login_user"
       body: "*"
     };
+    // OpenAPI metadata for user login.
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       description: "Use this API to login"
       summary: "Login user"
     };
   }
+
+  // RPC method for updating user information.
   rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
+    // HTTP mapping for updating user information.
     option(google.api.http) = {
       patch: "/v1/update_user"
       body: "*"
     };
+    // OpenAPI metadata for updating user information.
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       description: "Use this API to update user information"
       summary: "Update user"
