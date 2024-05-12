@@ -349,18 +349,26 @@ func TestCreateUser(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	user := createRandomUser(t)
 
-	res, err := services.GetUser(user.Username)
-	require.NoError(t, err)
-	require.NotEmpty(t, res)
+	t.Run("UserFound", func(t *testing.T) {
+		res, err := services.GetUser(user.Username)
+		require.NoError(t, err)
+		require.NotEmpty(t, res)
 
-	require.Equal(t, user.Username, res.Username)
-	require.Equal(t, user.FullName, res.FullName)
-	require.Equal(t, user.Email, res.Email)
-	require.Equal(t, user.HashedPassword, res.HashedPassword)
-	require.WithinDuration(t, user.CreatedAt, res.CreatedAt, time.Millisecond)
-	require.WithinDuration(t, user.UpdatedAt, res.UpdatedAt, time.Millisecond)
-	require.Equal(t, user.DeletedAt, res.DeletedAt)
-	require.True(t, res.DeletedAt.Time.IsZero())
+		require.Equal(t, user.Username, res.Username)
+		require.Equal(t, user.FullName, res.FullName)
+		require.Equal(t, user.Email, res.Email)
+		require.Equal(t, user.HashedPassword, res.HashedPassword)
+		require.WithinDuration(t, user.CreatedAt, res.CreatedAt, time.Millisecond)
+		require.WithinDuration(t, user.UpdatedAt, res.UpdatedAt, time.Millisecond)
+		require.Equal(t, user.DeletedAt, res.DeletedAt)
+		require.True(t, res.DeletedAt.Time.IsZero())
+	})
+	t.Run("UserNotFound", func(t *testing.T) {
+		res, err := services.GetUser(util.RandomUsername())
+		require.Error(t, err)
+		require.ErrorIs(t, err, gorm.ErrRecordNotFound)
+		require.Empty(t, res)
+	})
 }
 
 func createSession(t *testing.T) models.Session {
