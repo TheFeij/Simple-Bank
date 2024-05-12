@@ -11,7 +11,7 @@ type Services interface {
 	DeleteAccount(id int64) (models.Account, error)
 	DepositMoney(req requests.DepositRequest) (models.Entry, error)
 	WithdrawMoney(req requests.WithdrawRequest) (models.Entry, error)
-	Transfer(srcOwner string, req requests.TransferRequest) (models.Transfer, error)
+	Transfer(req TransferRequest) (models.Transfer, error)
 	ListAccounts(req ListAccountsRequest) ([]models.Account, error)
 	GetAccount(id int64) (models.Account, error)
 	GetTransfer(id int64) (models.Transfer, error)
