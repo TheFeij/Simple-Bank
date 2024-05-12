@@ -271,8 +271,8 @@ func (services *SQLServices) GetUser(username string) (models.User, error) {
 	var user models.User
 
 	if err := services.DB.
-		Raw("SELECT * FROM users WHERE username = ?", username).
-		Scan(&user).Error; err != nil {
+		Where("username = ?", username).
+		First(&user).Error; err != nil {
 		return user, err
 	}
 
