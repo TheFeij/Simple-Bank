@@ -118,7 +118,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (models
 	return newEntry, nil
 }
 
-func (services *SQLServices) Transfer(srcOwner string, req requests.TransferRequest) (models.Transfer, error) {
+func (services *SQLServices) Transfer(req TransferRequest) (models.Transfer, error) {
 	var newTransfer models.Transfer
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -139,7 +139,7 @@ func (services *SQLServices) Transfer(srcOwner string, req requests.TransferRequ
 			}
 		}
 
-		if srcAccount.Owner != srcOwner {
+		if srcAccount.Owner != req.Owner {
 			err := fmt.Errorf("user is not the owner of the source account")
 			return err
 		}
@@ -331,8 +331,7 @@ func (services *SQLServices) UpdateUser(req UpdateUserRequest) (models.User, err
 	return user, nil
 }
 
-func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Account, models.Account, error) {
-	var lowerAccount, higherAccount models.Account
+func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (lowerAccount models.Account, higherAccount models.Account, err error) {
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&lowerAccount, lowerAccountID).Error; err != nil {
 		return lowerAccount, higherAccount, err
