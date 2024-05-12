@@ -6,6 +6,7 @@ import (
 	"Simple-Bank/util"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 	"testing"
@@ -313,7 +314,36 @@ func createRandomUser(t *testing.T) models.User {
 }
 
 func TestCreateUser(t *testing.T) {
-	createRandomUser(t)
+	var user models.User
+	t.Run("UserCreated", func(t *testing.T) {
+		user = createRandomUser(t)
+	})
+	t.Run("DuplicateUsername", func(t *testing.T) {
+		user, err := services.CreateUser(requests.CreateUserRequest{
+			Username: user.Username,
+			Email:    util.RandomEmail(),
+			FullName: util.RandomFullname(),
+			Password: util.RandomPassword(),
+		})
+		require.Error(t, err)
+		var pgErr *pgconn.PgError
+		errors.As(err, &pgErr)
+		require.Equal(t, "users_pkey", pgErr.ConstraintName)
+		require.Empty(t, user)
+	})
+	t.Run("DuplicateEmail", func(t *testing.T) {
+		user, err := services.CreateUser(requests.CreateUserRequest{
+			Username: util.RandomUsername(),
+			Email:    user.Email,
+			FullName: util.RandomFullname(),
+			Password: util.RandomPassword(),
+		})
+		require.Error(t, err)
+		var pgErr *pgconn.PgError
+		errors.As(err, &pgErr)
+		require.Equal(t, "users_email_key", pgErr.ConstraintName)
+		require.Empty(t, user)
+	})
 }
 
 func TestGetUser(t *testing.T) {
