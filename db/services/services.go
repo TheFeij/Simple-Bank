@@ -332,11 +332,11 @@ func (services *SQLServices) UpdateUser(req UpdateUserRequest) (models.User, err
 }
 
 func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (lowerAccount models.Account, higherAccount models.Account, err error) {
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+	if err = tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&lowerAccount, lowerAccountID).Error; err != nil {
 		return lowerAccount, higherAccount, err
 	}
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+	if err = tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&higherAccount, higherAccountID).Error; err != nil {
 		return lowerAccount, higherAccount, err
 	}
