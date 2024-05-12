@@ -147,12 +147,13 @@ func TestTransfer(t *testing.T) {
 
 	for i := 0; i < concurrentTransactions; i++ {
 		go func(chan models.Transfer, chan error) {
-			transferRequest := requests.TransferRequest{
+			transferRequest := TransferRequest{
+				Owner:         srcOwner,
 				Amount:        amount,
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 			}
-			transfer, err := services.Transfer(srcOwner, transferRequest)
+			transfer, err := services.Transfer(transferRequest)
 
 			errorsChan <- err
 			resultsChan <- transfer
@@ -232,12 +233,13 @@ func TestTransferDeadLock(t *testing.T) {
 				fromAccountID, toAccountID = toAccountID, fromAccountID
 				srcOwner = account2.Owner
 			}
-			transferRequest := requests.TransferRequest{
+			transferRequest := TransferRequest{
+				Owner:         srcOwner,
 				Amount:        amount,
 				FromAccountID: fromAccountID,
 				ToAccountID:   toAccountID,
 			}
-			transfer, err := services.Transfer(srcOwner, transferRequest)
+			transfer, err := services.Transfer(transferRequest)
 			errorsChan <- err
 			resultsChan <- transfer
 		}(resultsChan, errorsChan, reverse)
