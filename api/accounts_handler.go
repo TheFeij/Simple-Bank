@@ -125,7 +125,12 @@ func (handler *Handler) Transfer(context *gin.Context) {
 
 	authPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	transfer, err := handler.services.Transfer(authPayload.Username, req)
+	transfer, err := handler.services.Transfer(services.TransferRequest{
+		Owner:         authPayload.Username,
+		FromAccountID: req.FromAccountID,
+		ToAccountID:   req.ToAccountID,
+		Amount:        req.Amount,
+	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
