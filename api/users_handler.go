@@ -6,7 +6,6 @@ import (
 	"Simple-Bank/responses"
 	"Simple-Bank/token"
 	"Simple-Bank/util"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -141,7 +140,7 @@ func (handler *Handler) Login(context *gin.Context) {
 
 	user, err := handler.services.GetUser(req.Username)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
