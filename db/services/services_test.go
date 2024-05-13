@@ -129,7 +129,7 @@ func TestGetAccountsList(t *testing.T) {
 		})
 		require.Empty(t, accounts)
 		require.Error(t, err)
-		require.True(t, errors.Is(err, ErrNoRecordsFound))
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
 	})
 }
 
