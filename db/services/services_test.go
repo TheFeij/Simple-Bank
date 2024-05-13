@@ -4,7 +4,9 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/util"
+	"errors"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 	"testing"
@@ -35,68 +37,100 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestGetAccount(t *testing.T) {
-	user := createRandomUser(t)
-	account := createAccount(t, user.Username)
+	t.Run("UserFound", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
 
-	response, err := services.GetAccount(account.ID)
+		response, err := services.GetAccount(account.ID)
 
-	require.NoError(t, err)
-	require.NotEmpty(t, response)
+		require.NoError(t, err)
+		require.NotEmpty(t, response)
 
-	require.Equal(t, account.ID, response.ID)
-	require.Equal(t, account.Balance, response.Balance)
-	require.Equal(t, account.Owner, response.Owner)
-	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
-	require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
-	require.Equal(t, account.DeletedAt, response.DeletedAt)
-	require.True(t, response.DeletedAt.Time.IsZero())
+		require.Equal(t, account.ID, response.ID)
+		require.Equal(t, account.Balance, response.Balance)
+		require.Equal(t, account.Owner, response.Owner)
+		require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+		require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
+		require.Equal(t, account.DeletedAt, response.DeletedAt)
+		require.True(t, response.DeletedAt.Time.IsZero())
+	})
+	t.Run("UserNotFound", func(t *testing.T) {
+		response, err := services.GetAccount(util.RandomID())
+		require.Error(t, err)
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.Empty(t, response)
+	})
 }
 
 func TestDeleteAccount(t *testing.T) {
-	user := createRandomUser(t)
-	account := createAccount(t, user.Username)
+	t.Run("UserDeletedSuccessfully", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
 
-	response, err := services.DeleteAccount(account.ID)
-	require.NoError(t, err)
-	require.NotEmpty(t, response)
-	require.Equal(t, account.ID, response.ID)
-	require.Equal(t, account.Balance, response.Balance)
-	require.Equal(t, account.Owner, response.Owner)
-	require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
-	require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
-	require.NotEqual(t, account.DeletedAt, response.DeletedAt)
-	require.False(t, response.DeletedAt.Time.IsZero())
+		response, err := services.DeleteAccount(account.ID)
+		require.NoError(t, err)
+		require.NotEmpty(t, response)
+		require.Equal(t, account.ID, response.ID)
+		require.Equal(t, account.Balance, response.Balance)
+		require.Equal(t, account.Owner, response.Owner)
+		require.WithinDuration(t, account.CreatedAt, response.CreatedAt, time.Second)
+		require.WithinDuration(t, account.UpdatedAt, response.UpdatedAt, time.Second)
+		require.WithinDuration(t, time.Now(), response.DeletedAt.Time, time.Second)
+		require.True(t, response.DeletedAt.Valid)
 
-	response, err = services.GetAccount(account.ID)
-	require.NoError(t, err)
-	require.NotEmpty(t, response)
-	require.False(t, response.DeletedAt.Time.IsZero())
+		response, err = services.GetAccount(account.ID)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.Empty(t, response)
+	})
+	t.Run("UserNotFound", func(t *testing.T) {
+		response, err := services.DeleteAccount(util.RandomID())
+		require.Error(t, err)
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.Empty(t, response)
+	})
 }
 
 func TestGetAccountsList(t *testing.T) {
-	user := createRandomUser(t)
+	t.Run("OK", func(t *testing.T) {
+		user := createRandomUser(t)
 
-	createdAccounts := make([]models.Account, 5)
-	for i := 0; i < 5; i++ {
-		createdAccounts[i] = createAccount(t, user.Username)
-	}
+		createdAccounts := make([]models.Account, 5)
+		for i := 0; i < 5; i++ {
+			createdAccounts[i] = createAccount(t, user.Username)
+		}
 
-	accounts, err := services.ListAccounts(user.Username, 1, 5)
+		accounts, err := services.ListAccounts(ListAccountsRequest{
+			Owner:      user.Username,
+			PageSize:   1,
+			PageNumber: 5,
+		})
 
-	require.NoError(t, err)
-	require.NotEmpty(t, accounts)
-	require.Len(t, accounts, 5)
+		require.NoError(t, err)
+		require.NotEmpty(t, accounts)
+		require.Len(t, accounts, 5)
 
-	for i, account := range accounts {
-		require.NotEmpty(t, account)
+		for i, account := range accounts {
+			require.NotEmpty(t, account)
 
-		require.Equal(t, user.Username, account.Owner)
-		require.Equal(t, createdAccounts[i].Balance, account.Balance)
-		require.True(t, account.ID > 0)
-		require.WithinDuration(t, createdAccounts[i].CreatedAt, account.CreatedAt, time.Second)
-		require.WithinDuration(t, createdAccounts[i].UpdatedAt, account.UpdatedAt, time.Second)
-		require.True(t, account.DeletedAt.Time.IsZero())
-	}
+			require.Equal(t, user.Username, account.Owner)
+			require.Equal(t, createdAccounts[i].Balance, account.Balance)
+			require.True(t, account.ID > 0)
+			require.WithinDuration(t, createdAccounts[i].CreatedAt, account.CreatedAt, time.Second)
+			require.WithinDuration(t, createdAccounts[i].UpdatedAt, account.UpdatedAt, time.Second)
+			require.True(t, account.DeletedAt.Time.IsZero())
+		}
+	})
+	t.Run("NoAccountsFound", func(t *testing.T) {
+		accounts, err := services.ListAccounts(ListAccountsRequest{
+			Owner:      util.RandomUsername(),
+			PageSize:   1,
+			PageNumber: 5,
+		})
+		require.Empty(t, accounts)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+	})
 }
 
 func TestTransfer(t *testing.T) {
@@ -114,12 +148,13 @@ func TestTransfer(t *testing.T) {
 
 	for i := 0; i < concurrentTransactions; i++ {
 		go func(chan models.Transfer, chan error) {
-			transferRequest := requests.TransferRequest{
+			transferRequest := TransferRequest{
+				Owner:         srcOwner,
 				Amount:        amount,
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 			}
-			transfer, err := services.Transfer(srcOwner, transferRequest)
+			transfer, err := services.Transfer(transferRequest)
 
 			errorsChan <- err
 			resultsChan <- transfer
@@ -199,12 +234,13 @@ func TestTransferDeadLock(t *testing.T) {
 				fromAccountID, toAccountID = toAccountID, fromAccountID
 				srcOwner = account2.Owner
 			}
-			transferRequest := requests.TransferRequest{
+			transferRequest := TransferRequest{
+				Owner:         srcOwner,
 				Amount:        amount,
 				FromAccountID: fromAccountID,
 				ToAccountID:   toAccountID,
 			}
-			transfer, err := services.Transfer(srcOwner, transferRequest)
+			transfer, err := services.Transfer(transferRequest)
 			errorsChan <- err
 			resultsChan <- transfer
 		}(resultsChan, errorsChan, reverse)
@@ -278,24 +314,61 @@ func createRandomUser(t *testing.T) models.User {
 }
 
 func TestCreateUser(t *testing.T) {
-	createRandomUser(t)
+	var user models.User
+	t.Run("UserCreated", func(t *testing.T) {
+		user = createRandomUser(t)
+	})
+	t.Run("DuplicateUsername", func(t *testing.T) {
+		user, err := services.CreateUser(requests.CreateUserRequest{
+			Username: user.Username,
+			Email:    util.RandomEmail(),
+			FullName: util.RandomFullname(),
+			Password: util.RandomPassword(),
+		})
+		require.Error(t, err)
+		var pgErr *pgconn.PgError
+		errors.As(err, &pgErr)
+		require.Equal(t, "users_pkey", pgErr.ConstraintName)
+		require.Empty(t, user)
+	})
+	t.Run("DuplicateEmail", func(t *testing.T) {
+		user, err := services.CreateUser(requests.CreateUserRequest{
+			Username: util.RandomUsername(),
+			Email:    user.Email,
+			FullName: util.RandomFullname(),
+			Password: util.RandomPassword(),
+		})
+		require.Error(t, err)
+		var pgErr *pgconn.PgError
+		errors.As(err, &pgErr)
+		require.Equal(t, "users_email_key", pgErr.ConstraintName)
+		require.Empty(t, user)
+	})
 }
 
 func TestGetUser(t *testing.T) {
 	user := createRandomUser(t)
 
-	res, err := services.GetUser(user.Username)
-	require.NoError(t, err)
-	require.NotEmpty(t, res)
+	t.Run("UserFound", func(t *testing.T) {
+		res, err := services.GetUser(user.Username)
+		require.NoError(t, err)
+		require.NotEmpty(t, res)
 
-	require.Equal(t, user.Username, res.Username)
-	require.Equal(t, user.FullName, res.FullName)
-	require.Equal(t, user.Email, res.Email)
-	require.Equal(t, user.HashedPassword, res.HashedPassword)
-	require.WithinDuration(t, user.CreatedAt, res.CreatedAt, time.Millisecond)
-	require.WithinDuration(t, user.UpdatedAt, res.UpdatedAt, time.Millisecond)
-	require.Equal(t, user.DeletedAt, res.DeletedAt)
-	require.True(t, res.DeletedAt.Time.IsZero())
+		require.Equal(t, user.Username, res.Username)
+		require.Equal(t, user.FullName, res.FullName)
+		require.Equal(t, user.Email, res.Email)
+		require.Equal(t, user.HashedPassword, res.HashedPassword)
+		require.WithinDuration(t, user.CreatedAt, res.CreatedAt, time.Millisecond)
+		require.WithinDuration(t, user.UpdatedAt, res.UpdatedAt, time.Millisecond)
+		require.Equal(t, user.DeletedAt, res.DeletedAt)
+		require.True(t, res.DeletedAt.Time.IsZero())
+	})
+	t.Run("UserNotFound", func(t *testing.T) {
+		res, err := services.GetUser(util.RandomUsername())
+		require.Error(t, err)
+		require.ErrorIs(t, err, gorm.ErrRecordNotFound)
+		require.Empty(t, res)
+	})
 }
 
 func createSession(t *testing.T) models.Session {

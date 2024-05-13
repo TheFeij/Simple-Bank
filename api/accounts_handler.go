@@ -1,13 +1,14 @@
 package api
 
 import (
+	"Simple-Bank/db/services"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/token"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 )
@@ -39,7 +40,7 @@ func (handler *Handler) GetAccount(context *gin.Context) {
 
 	account, err := handler.services.GetAccount(req.ID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -80,9 +81,13 @@ func (handler *Handler) GetAccountsList(context *gin.Context) {
 
 	auhPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	accounts, err := handler.services.ListAccounts(auhPayload.Username, req.PageID, req.PageSize)
+	accounts, err := handler.services.ListAccounts(services.ListAccountsRequest{
+		Owner:      auhPayload.Username,
+		PageSize:   int(req.PageSize),
+		PageNumber: int(req.PageID),
+	})
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -120,7 +125,12 @@ func (handler *Handler) Transfer(context *gin.Context) {
 
 	authPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	transfer, err := handler.services.Transfer(authPayload.Username, req)
+	transfer, err := handler.services.Transfer(services.TransferRequest{
+		Owner:         authPayload.Username,
+		FromAccountID: req.FromAccountID,
+		ToAccountID:   req.ToAccountID,
+		Amount:        req.Amount,
+	})
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

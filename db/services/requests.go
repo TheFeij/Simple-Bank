@@ -11,3 +11,25 @@ type UpdateUserRequest struct {
 	// New email address for the user (optional).
 	Email *string
 }
+
+// ListAccountsRequest represents a request to get a list of a user's accounts
+type ListAccountsRequest struct {
+	// Owner is the username of the owner of the accounts
+	Owner string
+	// PageSize represents number of accounts in a page
+	PageSize int
+	// PageNumber page number
+	PageNumber int
+}
+
+// TransferRequest represents a request to transfer money from a source account to another account
+type TransferRequest struct {
+	// Owner is the username of the owner of the account with id = FromAccountID
+	Owner string
+	// FromAccountID is the id of the source account
+	FromAccountID int64
+	// ToAccountID is the id of the destination account
+	ToAccountID int64
+	// Amount is the amount of money to be transferred from FromAccountID to ToAccountID
+	Amount int32
+}

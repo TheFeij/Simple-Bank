@@ -4,7 +4,6 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/util"
-	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -41,16 +40,17 @@ func (services *SQLServices) CreateAccount(owner string) (models.Account, error)
 func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 	var deletedAccount models.Account
 
-	if err := services.DB.Exec(
-		"UPDATE accounts SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?", id).
-		Error; err != nil {
-		return deletedAccount, err
-	}
+	if err := services.DB.Transaction(func(tx *gorm.DB) error {
+		if err := services.DB.Delete(&deletedAccount, id).Error; err != nil {
+			return err
+		}
 
-	if err := services.DB.
-		Raw("SELECT * FROM accounts WHERE id = ?", id).
-		Scan(&deletedAccount).Error; err != nil {
-		return deletedAccount, err
+		if err := services.DB.Unscoped().First(&deletedAccount, id).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return models.Account{}, err
 	}
 
 	return deletedAccount, nil
@@ -118,7 +118,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (models
 	return newEntry, nil
 }
 
-func (services *SQLServices) Transfer(srcOwner string, req requests.TransferRequest) (models.Transfer, error) {
+func (services *SQLServices) Transfer(req TransferRequest) (models.Transfer, error) {
 	var newTransfer models.Transfer
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -139,7 +139,7 @@ func (services *SQLServices) Transfer(srcOwner string, req requests.TransferRequ
 			}
 		}
 
-		if srcAccount.Owner != srcOwner {
+		if srcAccount.Owner != req.Owner {
 			err := fmt.Errorf("user is not the owner of the source account")
 			return err
 		}
@@ -188,19 +188,27 @@ func (services *SQLServices) Transfer(srcOwner string, req requests.TransferRequ
 	return newTransfer, nil
 }
 
-func (services *SQLServices) ListAccounts(owner string, pageNumber int64, pageSize int8) ([]models.Account, error) {
+// ListAccounts retrieves a list of accounts owned by a specified user with pagination.
+//
+// It takes a ListAccountsRequest containing information about the owner, page number, and page size.
+// It returns a slice of models.Account representing the accounts retrieved from the database, along with an error if any.
+//
+// If no accounts are found for the specified owner or an error occurs during the database operation,
+// it returns an empty slice of models.Account and the corresponding error.
+func (services *SQLServices) ListAccounts(req ListAccountsRequest) ([]models.Account, error) {
 	var accountsList []models.Account
 
-	offset := (pageNumber - 1) * int64(pageSize)
+	offset := (req.PageNumber - 1) * req.PageSize
 	res := services.DB.
-		Raw("SELECT * FROM accounts WHERE owner = ? LIMIT ? OFFSET ?", owner, pageSize, offset).
-		Scan(&accountsList)
+		Find(&accountsList, "owner = ?", req.Owner).
+		Limit(req.PageSize).
+		Offset(offset)
 
-	if res.RowsAffected == 0 {
-		return accountsList, sql.ErrNoRows
+	if err := res.Error; err != nil {
+		return []models.Account{}, err
 	}
-	if res.Error != nil {
-		return accountsList, res.Error
+	if res.RowsAffected == 0 {
+		return []models.Account{}, gorm.ErrRecordNotFound
 	}
 
 	return accountsList, nil
@@ -209,15 +217,8 @@ func (services *SQLServices) ListAccounts(owner string, pageNumber int64, pageSi
 func (services *SQLServices) GetAccount(id int64) (models.Account, error) {
 	var account models.Account
 
-	res := services.DB.
-		Raw("SELECT * FROM accounts WHERE id = ?", id).
-		Scan(&account)
-
-	if res.RowsAffected == 0 {
-		return account, sql.ErrNoRows
-	}
-	if res.Error != nil {
-		return account, res.Error
+	if err := services.DB.First(&account, id).Error; err != nil {
+		return models.Account{}, err
 	}
 
 	return account, nil
@@ -270,8 +271,8 @@ func (services *SQLServices) GetUser(username string) (models.User, error) {
 	var user models.User
 
 	if err := services.DB.
-		Raw("SELECT * FROM users WHERE username = ?", username).
-		Scan(&user).Error; err != nil {
+		Where("username = ?", username).
+		First(&user).Error; err != nil {
 		return user, err
 	}
 
@@ -330,13 +331,12 @@ func (services *SQLServices) UpdateUser(req UpdateUserRequest) (models.User, err
 	return user, nil
 }
 
-func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (models.Account, models.Account, error) {
-	var lowerAccount, higherAccount models.Account
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (lowerAccount models.Account, higherAccount models.Account, err error) {
+	if err = tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&lowerAccount, lowerAccountID).Error; err != nil {
 		return lowerAccount, higherAccount, err
 	}
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+	if err = tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&higherAccount, higherAccountID).Error; err != nil {
 		return lowerAccount, higherAccount, err
 	}
