@@ -1,10 +1,10 @@
 package api
 
 import (
+	"Simple-Bank/db/services"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/token"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -81,9 +81,13 @@ func (handler *Handler) GetAccountsList(context *gin.Context) {
 
 	auhPayload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	accounts, err := handler.services.ListAccounts(auhPayload.Username, req.PageID, req.PageSize)
+	accounts, err := handler.services.ListAccounts(services.ListAccountsRequest{
+		Owner:      auhPayload.Username,
+		PageSize:   int(req.PageSize),
+		PageNumber: int(req.PageID),
+	})
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
