@@ -107,7 +107,7 @@ func (handler *Handler) GetUser(context *gin.Context) {
 
 	user, err := handler.services.GetUser(req.Username)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			context.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
