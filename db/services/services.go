@@ -208,7 +208,7 @@ func (services *SQLServices) ListAccounts(req ListAccountsRequest) ([]models.Acc
 		return []models.Account{}, err
 	}
 	if res.RowsAffected == 0 {
-		return []models.Account{}, ErrNoRecordsFound
+		return []models.Account{}, gorm.ErrRecordNotFound
 	}
 
 	return accountsList, nil
