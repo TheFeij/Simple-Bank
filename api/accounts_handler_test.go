@@ -3,6 +3,7 @@ package api
 import (
 	mockdb "Simple-Bank/db/mock"
 	"Simple-Bank/db/models"
+	servicesPackage "Simple-Bank/db/services"
 	"Simple-Bank/requests"
 	"Simple-Bank/responses"
 	"Simple-Bank/token"
@@ -170,7 +171,7 @@ func TestGetAccount(t *testing.T) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, randomUser.Username, time.Minute, httpReq)
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountRequest) {
-				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(models.Account{}, sql.ErrNoRows)
+				services.EXPECT().GetAccount(gomock.Eq(account.ID)).Times(1).Return(models.Account{}, gorm.ErrRecordNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -255,7 +256,11 @@ func TestGetAccountsList(t *testing.T) {
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
 				services.EXPECT().
-					ListAccounts(gomock.Eq(randomUser.Username), gomock.Eq(req.PageID), gomock.Eq(req.PageSize)).
+					ListAccounts(gomock.Eq(servicesPackage.ListAccountsRequest{
+						Owner:      randomUser.Username,
+						PageSize:   int(req.PageSize),
+						PageNumber: int(req.PageID),
+					})).
 					Times(1).Return(accounts[startIndex:endIndex], nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -273,7 +278,7 @@ func TestGetAccountsList(t *testing.T) {
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
 				services.EXPECT().
-					ListAccounts(gomock.Any(), gomock.Any(), gomock.Any()).
+					ListAccounts(gomock.Any()).
 					Times(0)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -291,7 +296,7 @@ func TestGetAccountsList(t *testing.T) {
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
 				services.EXPECT().
-					ListAccounts(gomock.Any(), gomock.Any(), gomock.Any()).
+					ListAccounts(gomock.Any()).
 					Times(0)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -309,8 +314,12 @@ func TestGetAccountsList(t *testing.T) {
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
 				services.EXPECT().
-					ListAccounts(gomock.Eq(randomUser.Username), gomock.Eq(req.PageID), gomock.Eq(req.PageSize)).
-					Times(1).Return([]models.Account{}, sql.ErrNoRows)
+					ListAccounts(gomock.Eq(servicesPackage.ListAccountsRequest{
+						Owner:      randomUser.Username,
+						PageSize:   int(req.PageSize),
+						PageNumber: int(req.PageID),
+					})).
+					Times(1).Return([]models.Account{}, gorm.ErrRecordNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -327,7 +336,11 @@ func TestGetAccountsList(t *testing.T) {
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.GetAccountsListRequest) {
 				services.EXPECT().
-					ListAccounts(gomock.Eq(randomUser.Username), gomock.Eq(req.PageID), gomock.Eq(req.PageSize)).
+					ListAccounts(gomock.Eq(servicesPackage.ListAccountsRequest{
+						Owner:      randomUser.Username,
+						PageSize:   int(req.PageSize),
+						PageNumber: int(req.PageID),
+					})).
 					Times(1).Return([]models.Account{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -400,7 +413,12 @@ func TestTransfer(t *testing.T) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute, httpReq)
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.TransferRequest) {
-				services.EXPECT().Transfer(gomock.Eq(user1.Username), gomock.Eq(req)).Times(1).Return(transfer, nil)
+				services.EXPECT().Transfer(gomock.Eq(servicesPackage.TransferRequest{
+					Owner:         user1.Username,
+					FromAccountID: req.FromAccountID,
+					ToAccountID:   req.ToAccountID,
+					Amount:        req.Amount,
+				})).Times(1).Return(transfer, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -417,7 +435,7 @@ func TestTransfer(t *testing.T) {
 			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.TransferRequest) {
-				services.EXPECT().Transfer(gomock.Any(), gomock.Any()).Times(0)
+				services.EXPECT().Transfer(gomock.Any()).Times(0)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
@@ -434,7 +452,7 @@ func TestTransfer(t *testing.T) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute, httpReq)
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.TransferRequest) {
-				services.EXPECT().Transfer(gomock.Any(), gomock.Any()).Times(0)
+				services.EXPECT().Transfer(gomock.Any()).Times(0)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -451,7 +469,12 @@ func TestTransfer(t *testing.T) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, user1.Username, time.Minute, httpReq)
 			},
 			buildStubs: func(services *mockdb.MockServices, req requests.TransferRequest) {
-				services.EXPECT().Transfer(gomock.Eq(user1.Username), gomock.Eq(req)).Times(1).
+				services.EXPECT().Transfer(gomock.Eq(servicesPackage.TransferRequest{
+					Owner:         user1.Username,
+					FromAccountID: req.FromAccountID,
+					ToAccountID:   req.ToAccountID,
+					Amount:        req.Amount,
+				})).Times(1).
 					Return(models.Transfer{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {

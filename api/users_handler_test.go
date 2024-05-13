@@ -305,7 +305,7 @@ func TestGetUserAPI(t *testing.T) {
 				services.EXPECT().
 					GetUser(gomock.Eq(username)).
 					Times(1).
-					Return(models.User{}, sql.ErrNoRows)
+					Return(models.User{}, gorm.ErrRecordNotFound)
 			},
 			setupAuth: func(t *testing.T, httpReq *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, tokenMaker, authorizationTypeBearer, createdUser.Username, time.Minute, httpReq)
@@ -487,7 +487,7 @@ func TestLogin(t *testing.T) {
 				services.EXPECT().
 					GetUser(gomock.Eq(req.Username)).
 					Times(1).
-					Return(models.User{}, sql.ErrNoRows)
+					Return(models.User{}, gorm.ErrRecordNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, tokenMaker token.Maker) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
