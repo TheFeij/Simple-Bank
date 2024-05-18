@@ -7,9 +7,16 @@ package pb;
 import "rpc_create_user.proto";
 import "rpc_login_user.proto";
 import "rpc_update_user.proto";
+import "rpc_create_account.proto";
+import "rpc_get_account.proto";
+import "rpc_transfer.proto";
+import "rpc_list_accounts.proto";
 
 // Importing Google API annotations for HTTP mapping.
 import "google/api/annotations.proto";
+
+// Importing Google's empty message
+import "google/protobuf/empty.proto";
 
 // Importing annotations for generating OpenAPI documentation.
 import "protoc-gen-openapiv2/options/annotations.proto";
@@ -71,6 +78,59 @@ service SimpleBank {
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       description: "Use this API to update user information"
       summary: "Update user"
+    };
+  }
+
+  // RPC method to create a new account for the user
+  rpc CreateAccount (google.protobuf.Empty) returns (CreateAccountResponse) {
+    // HTTP mapping for create account
+    option(google.api.http) = {
+      post: "/v1/create_account"
+    };
+    // OpenAPI metadata for create account.
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Use this API to create a new account"
+      summary: "create account"
+    };
+  }
+
+  // RPC to get information of an account
+  rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {
+    // HTTP mapping for get account
+    option(google.api.http) = {
+      get: "/v1/get_account/{id}"
+    };
+    // OpenAPI metadata for get account
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Use this API to get information about an account";
+      summary: "get account";
+    };
+  }
+
+  // RPC to get a list of all accounts belonging to a user
+  rpc ListAccounts (ListAccountsRequest) returns (ListAccountsResponse) {
+    // HTTP mapping for list accounts
+    option(google.api.http) = {
+      get: "/v1/list_accounts"
+    };
+    // OpenAPI metadata for list accounts
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Use this API to get a list of user's accounts"
+      summary: "list accounts";
+    };
+  }
+
+  // RPC to transfer money
+  rpc Transfer (TransferRequest) returns (TransferResponse) {
+    // HTTP mapping for transfer
+    option(google.api.http) = {
+      post: "/v1/transfer";
+      body:"*";
+    };
+    // OpenAPI metadata for transfer
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Use this API to transfer money from one account to another";
+      summary: "transfer money";
     };
   }
 }
