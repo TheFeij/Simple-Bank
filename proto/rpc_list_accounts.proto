@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+
+package pb;
+
+option go_package = "Simple-Bank/pb";
+
+import "account.proto";
+
+// represents a rpc request to get a list of all accounts belonging to a user
+message ListAccountsRequest {
+  int64 page_id = 1;
+  int32 page_size = 2;
+}
+
+// represents the response to list accounts rpc request
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+}
