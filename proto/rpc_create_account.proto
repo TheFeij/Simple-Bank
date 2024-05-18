@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "Simple-Bank/pb";
+
+import "account.proto";
+
+message CreateAccountResponse {
+  Account account = 1;
+}
+
