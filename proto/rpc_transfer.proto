@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "Simple-Bank/pb";
+
+import "google/protobuf/timestamp.proto";
+
+// represents a transfer request to transfer money from a account to another
+message TransferRequest {
+  int64 from_account_id = 1;
+  int64 to_account_id = 2;
+  int32 amount = 3;
+}
+
+// represents the response to transfer rpc request
+message TransferResponse {
+  int64 transfer_id = 1;
+  int64 src_account_id = 2;
+  int64 dst_account_id = 3;
+  int64 incoming_entry_id = 4;
+  int64 outgoing_entry_id = 5;
+  google.protobuf.Timestamp create_at = 6;
+  int32 amount = 7;
+}
