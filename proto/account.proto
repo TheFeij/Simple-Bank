@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "Simple-Bank/pb";
+
+import "google/protobuf/timestamp.proto";
+
+// represents a bank account
+message Account {
+  int64 account_id = 1;
+  string owner = 2;
+  int64 balance = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
+}
