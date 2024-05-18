@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "Simple-Bank/pb";
+
+import "account.proto";
+
+// represents a rpc request to get an account by id
+message GetAccountRequest {
+  uint64 id = 1;
+}
+
+// represents the response to the get account rpc request
+message GetAccountResponse {
+  Account account = 1;
+}
