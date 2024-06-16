@@ -82,3 +82,13 @@ func validateTransferRequest(req *pb.TransferRequest) (violations []*errdetails.
 
 	return violations
 }
+
+// validateId validates input id
+func validateId(id int64) (violations []*errdetails.BadRequest_FieldViolation) {
+	if id < 1 {
+		err := errors.New("invalid id, should be equal or higher than 1")
+		violations = append(violations, fieldViolation("id", err))
+	}
+
+	return
+}
