@@ -145,6 +145,7 @@ func (services *SQLServices) WithdrawMoney(req WithdrawRequest) (models.Entry, e
 	return newEntry, nil
 }
 
+// Transfer transfers money from one account to another
 func (services *SQLServices) Transfer(req TransferRequest) (models.Transfer, error) {
 	var newTransfer models.Transfer
 
@@ -156,23 +157,32 @@ func (services *SQLServices) Transfer(req TransferRequest) (models.Transfer, err
 			var err error
 			srcAccount, dstAccount, err = acquireLock(tx, req.FromAccountID, req.ToAccountID)
 			if err != nil {
+				if errors.Is(err, errLowerAccountNotFound) {
+					return ErrSrcAccountNotFound
+				} else if errors.Is(err, errhigherAccountNotFound) {
+					return ErrDstAccountNotFound
+				}
 				return err
 			}
 		} else {
 			var err error
 			dstAccount, srcAccount, err = acquireLock(tx, req.ToAccountID, req.FromAccountID)
 			if err != nil {
+				if errors.Is(err, errLowerAccountNotFound) {
+					return ErrDstAccountNotFound
+				} else if errors.Is(err, errhigherAccountNotFound) {
+					return ErrSrcAccountNotFound
+				}
 				return err
 			}
 		}
 
 		if srcAccount.Owner != req.Owner {
-			err := fmt.Errorf("user is not the owner of the source account")
-			return err
+			return ErrUnAuthorizedTransfer
 		}
 		srcAccount.Balance -= int64(req.Amount)
 		if srcAccount.Balance < 0 {
-			return fmt.Errorf("src account doesnt have enough money to transfer")
+			return ErrNotEnoughMoney
 		}
 		dstAccount.Balance += int64(req.Amount)
 
@@ -361,13 +371,24 @@ func (services *SQLServices) UpdateUser(req UpdateUserRequest) (models.User, err
 	return user, nil
 }
 
+var (
+	errLowerAccountNotFound  = fmt.Errorf("lower id account not found")
+	errhigherAccountNotFound = fmt.Errorf("higher id account not found")
+)
+
 func acquireLock(tx *gorm.DB, lowerAccountID, higherAccountID int64) (lowerAccount models.Account, higherAccount models.Account, err error) {
 	if err = tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&lowerAccount, lowerAccountID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = errLowerAccountNotFound
+		}
 		return lowerAccount, higherAccount, err
 	}
 	if err = tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&higherAccount, higherAccountID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = errhigherAccountNotFound
+		}
 		return lowerAccount, higherAccount, err
 	}
 
