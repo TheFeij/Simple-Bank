@@ -9,7 +9,9 @@ import "account.proto";
 
 // represents a rpc request to get a list of all accounts belonging to a user
 message ListAccountsRequest {
+  // page number
   int64 page_id = 1;
+  // size of each page
   int32 page_size = 2;
 }
 
