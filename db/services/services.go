@@ -38,6 +38,7 @@ func (services *SQLServices) CreateAccount(owner string) (models.Account, error)
 	return newAccount, nil
 }
 
+// DeleteAccount deletes an account with the specified id
 func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 	var deletedAccount models.Account
 
