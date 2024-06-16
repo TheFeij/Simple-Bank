@@ -4,6 +4,7 @@ import (
 	"Simple-Bank/db/models"
 	"Simple-Bank/requests"
 	"Simple-Bank/util"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -50,6 +51,9 @@ func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 		}
 		return nil
 	}); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = ErrAccountNotFound
+		}
 		return models.Account{}, err
 	}
 
