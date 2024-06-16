@@ -57,7 +57,7 @@ func TestGetAccount(t *testing.T) {
 	t.Run("UserNotFound", func(t *testing.T) {
 		response, err := services.GetAccount(util.RandomID())
 		require.Error(t, err)
-		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.True(t, errors.Is(err, ErrAccountNotFound))
 		require.Empty(t, response)
 	})
 }
