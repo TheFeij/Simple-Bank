@@ -33,3 +33,23 @@ type TransferRequest struct {
 	// Amount is the amount of money to be transferred from FromAccountID to ToAccountID
 	Amount int32
 }
+
+// DepositRequest represents a request to deposit money
+type DepositRequest struct {
+	// Owner of the account
+	Owner string
+	// AccountID is the id of the account
+	AccountID int64
+	// Amount is the amount of money to be deposited
+	Amount int32
+}
+
+// WithdrawRequest represents a request to withdraw money
+type WithdrawRequest struct {
+	// Owner of the account
+	Owner string
+	// AccountID is the id of the account
+	AccountID int64
+	// Amount is the amount of money to be withdrawn
+	Amount int32
+}
