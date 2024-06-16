@@ -7,11 +7,13 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "Simple-Bank/pb";
 
+// request message to login
 message LoginUserRequest {
   string username = 1;
   string password = 2;
 }
 
+// response message to a login request
 message LoginUserResponse {
   User user = 1;
   string access_token = 2;
