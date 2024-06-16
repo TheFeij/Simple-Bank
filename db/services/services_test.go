@@ -63,7 +63,7 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestDeleteAccount(t *testing.T) {
-	t.Run("UserDeletedSuccessfully", func(t *testing.T) {
+	t.Run("AccountDeletedSuccessfully", func(t *testing.T) {
 		user := createRandomUser(t)
 		account := createAccount(t, user.Username)
 
@@ -83,7 +83,7 @@ func TestDeleteAccount(t *testing.T) {
 		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
 		require.Empty(t, response)
 	})
-	t.Run("UserNotFound", func(t *testing.T) {
+	t.Run("AccountNotFound", func(t *testing.T) {
 		response, err := services.DeleteAccount(util.RandomID())
 		require.Error(t, err)
 		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
