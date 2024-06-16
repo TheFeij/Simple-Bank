@@ -245,10 +245,14 @@ func (services *SQLServices) ListAccounts(req ListAccountsRequest) ([]models.Acc
 	return accountsList, nil
 }
 
+// GetAccount returns the account with the given id
 func (services *SQLServices) GetAccount(id int64) (models.Account, error) {
 	var account models.Account
 
 	if err := services.DB.First(&account, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = ErrAccountNotFound
+		}
 		return models.Account{}, err
 	}
 
