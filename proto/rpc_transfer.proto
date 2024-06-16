@@ -8,8 +8,11 @@ import "google/protobuf/timestamp.proto";
 
 // represents a transfer request to transfer money from a account to another
 message TransferRequest {
+  // source account
   int64 from_account_id = 1;
+  // destination account
   int64 to_account_id = 2;
+  // amount of money to be transferred from from_account_id to to_account_id
   int32 amount = 3;
 }
 
