@@ -45,17 +45,18 @@ func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
 		if err := services.DB.Delete(&deletedAccount, id).Error; err != nil {
+
 			return err
 		}
 
 		if err := services.DB.Unscoped().First(&deletedAccount, id).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				err = ErrAccountNotFound
+			}
 			return err
 		}
 		return nil
 	}); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err = ErrAccountNotFound
-		}
 		return models.Account{}, err
 	}
 
