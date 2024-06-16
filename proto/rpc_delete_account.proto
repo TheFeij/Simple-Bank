@@ -8,6 +8,7 @@ import "account.proto";
 
 // request message to delete account
 message DeleteAccountRequest {
+  // id of the account to be deleted
   int64 id = 1;
 }
 
