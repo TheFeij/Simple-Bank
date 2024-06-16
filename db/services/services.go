@@ -68,11 +68,11 @@ func (services *SQLServices) DepositMoney(req DepositRequest) (models.Entry, err
 
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
-			return nil
+			return err
 		}
 
 		if account.Owner != req.Owner {
-			return fmt.Errorf("cannot deposit money into other users accounts")
+			return ErrUnAuthorizedDeposit
 		}
 
 		if err := tx.Create(&newEntry).Error; err != nil {
@@ -108,7 +108,7 @@ func (services *SQLServices) WithdrawMoney(req WithdrawRequest) (models.Entry, e
 		}
 
 		if account.Owner != req.Owner {
-			return fmt.Errorf("cannot withdraw money from other users acccounts")
+			return ErrUnAuthorizedWithdraw
 		}
 
 		if err := tx.Create(&newEntry).Error; err != nil {
