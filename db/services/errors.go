@@ -7,4 +7,5 @@ var (
 	ErrUnAuthorizedDeposit  = fmt.Errorf("cannot deposit money into other user's accounts")
 	ErrUserNotFound         = fmt.Errorf("user not found")
 	ErrAccountNotFound      = fmt.Errorf("account not found")
+	ErrNotEnoughMoney       = fmt.Errorf("not enough money in the account")
 )
