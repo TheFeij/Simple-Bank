@@ -80,13 +80,13 @@ func TestDeleteAccount(t *testing.T) {
 
 		response, err = services.GetAccount(account.ID)
 		require.Error(t, err)
-		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.ErrorIs(t, err, ErrAccountNotFound)
 		require.Empty(t, response)
 	})
 	t.Run("AccountNotFound", func(t *testing.T) {
 		response, err := services.DeleteAccount(util.RandomID())
 		require.Error(t, err)
-		require.ErrorIs(t, err, ErrSrcAccountNotFound)
+		require.ErrorIs(t, err, ErrAccountNotFound)
 		require.Empty(t, response)
 	})
 }
