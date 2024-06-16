@@ -134,159 +134,210 @@ func TestGetAccountsList(t *testing.T) {
 }
 
 func TestTransfer(t *testing.T) {
-	user1 := createRandomUser(t)
-	user2 := createRandomUser(t)
-	srcOwner := user1.Username
-	account1 := createAccount(t, user1.Username)
-	account2 := createAccount(t, user2.Username)
+	t.Run("Concurrent Transfers From 1 to 2", func(t *testing.T) {
+		user1 := createRandomUser(t)
+		user2 := createRandomUser(t)
+		srcOwner := user1.Username
+		account1 := createAccount(t, user1.Username)
+		account2 := createAccount(t, user2.Username)
 
-	concurrentTransactions := 20
-	var amount int32 = 10
+		concurrentTransactions := 20
+		var amount int32 = 10
 
-	errorsChan := make(chan error)
-	resultsChan := make(chan models.Transfer)
+		errorsChan := make(chan error)
+		resultsChan := make(chan models.Transfer)
 
-	for i := 0; i < concurrentTransactions; i++ {
-		go func(chan models.Transfer, chan error) {
-			transferRequest := TransferRequest{
-				Owner:         srcOwner,
-				Amount:        amount,
-				FromAccountID: account1.ID,
-				ToAccountID:   account2.ID,
-			}
-			transfer, err := services.Transfer(transferRequest)
+		for i := 0; i < concurrentTransactions; i++ {
+			go func(chan models.Transfer, chan error) {
+				transferRequest := TransferRequest{
+					Owner:         srcOwner,
+					Amount:        amount,
+					FromAccountID: account1.ID,
+					ToAccountID:   account2.ID,
+				}
+				transfer, err := services.Transfer(transferRequest)
 
-			errorsChan <- err
-			resultsChan <- transfer
-		}(resultsChan, errorsChan)
-	}
+				errorsChan <- err
+				resultsChan <- transfer
+			}(resultsChan, errorsChan)
+		}
 
-	for i := 0; i < concurrentTransactions; i++ {
-		err := <-errorsChan
+		for i := 0; i < concurrentTransactions; i++ {
+			err := <-errorsChan
+			require.NoError(t, err)
+
+			transfer := <-resultsChan
+			require.NotEmpty(t, transfer)
+			require.Equal(t, amount, transfer.Amount)
+			require.Equal(t, account1.ID, transfer.FromAccountID)
+			require.Equal(t, account2.ID, transfer.ToAccountID)
+			require.NotZero(t, transfer.CreatedAt)
+			require.NotZero(t, transfer.ID)
+
+			var result models.Transfer
+			result, err = services.GetTransfer(transfer.ID)
+			require.NoError(t, err)
+
+			var fromEntry models.Entry
+			fromEntry, err = services.GetEntry(result.OutgoingEntryID)
+			require.NoError(t, err)
+			require.NotEmpty(t, fromEntry)
+			require.Equal(t, account1.ID, fromEntry.AccountID)
+			require.Equal(t, amount, -fromEntry.Amount)
+			require.NotZero(t, fromEntry.ID)
+			require.NotZero(t, fromEntry.CreatedAt)
+
+			var toEntry models.Entry
+			toEntry, err = services.GetEntry(result.IncomingEntryID)
+			require.NoError(t, err)
+			require.NotEmpty(t, toEntry)
+			require.Equal(t, account2.ID, toEntry.AccountID)
+			require.Equal(t, amount, toEntry.Amount)
+			require.NotZero(t, toEntry.ID)
+			require.NotZero(t, toEntry.CreatedAt)
+
+			fromAccount, err := services.GetAccount(account1.ID)
+			require.Equal(t, account1.ID, fromAccount.ID)
+			require.NoError(t, err)
+
+			toAccount, err := services.GetAccount(account2.ID)
+			require.Equal(t, account2.ID, toAccount.ID)
+			require.NoError(t, err)
+
+			var diff1 = int32(account1.Balance - fromAccount.Balance)
+			var diff2 = int32(toAccount.Balance - account2.Balance)
+
+			require.True(t, diff2 > 0)
+			require.True(t, diff1 > 0)
+			require.Equal(t, diff1, diff2)
+			require.Equal(t, amount, diff1/int32(i+1))
+		}
+	})
+	t.Run("Concurrent Transfers From 1 to 2 and Reverse", func(t *testing.T) {
+		user1 := createRandomUser(t)
+		user2 := createRandomUser(t)
+		account1 := createAccount(t, user1.Username)
+		account2 := createAccount(t, user2.Username)
+
+		concurrentTransactions := 20
+		var amount int32 = 10
+
+		errorsChan := make(chan error)
+		resultsChan := make(chan models.Transfer)
+
+		for i := 0; i < concurrentTransactions; i++ {
+			reverse := i%2 == 0
+			go func(chan models.Transfer, chan error, bool) {
+				srcOwner := account1.Owner
+				fromAccountID, toAccountID := account1.ID, account2.ID
+				if reverse {
+					fromAccountID, toAccountID = toAccountID, fromAccountID
+					srcOwner = account2.Owner
+				}
+				transferRequest := TransferRequest{
+					Owner:         srcOwner,
+					Amount:        amount,
+					FromAccountID: fromAccountID,
+					ToAccountID:   toAccountID,
+				}
+				transfer, err := services.Transfer(transferRequest)
+				errorsChan <- err
+				resultsChan <- transfer
+			}(resultsChan, errorsChan, reverse)
+		}
+
+		for i := 0; i < concurrentTransactions; i++ {
+			err := <-errorsChan
+			require.NoError(t, err)
+
+			transfer := <-resultsChan
+			require.NotEmpty(t, transfer)
+
+			var result models.Transfer
+			result, err = services.GetTransfer(transfer.ID)
+			require.NoError(t, err)
+			require.NotEmpty(t, result)
+
+			var fromEntry models.Entry
+			fromEntry, err = services.GetEntry(result.OutgoingEntryID)
+			require.NoError(t, err)
+			require.NotEmpty(t, fromEntry)
+
+			var toEntry models.Entry
+			toEntry, err = services.GetEntry(result.IncomingEntryID)
+			require.NoError(t, err)
+			require.NotEmpty(t, toEntry)
+
+			fromAccount, err := services.GetAccount(result.FromAccountID)
+			require.NotEmpty(t, fromAccount)
+			require.NoError(t, err)
+
+			toAccount, err := services.GetAccount(result.ToAccountID)
+			require.NotEmpty(t, toAccount)
+			require.NoError(t, err)
+		}
+
+		account1After, err := services.GetAccount(account1.ID)
+		require.NotEmpty(t, account1)
 		require.NoError(t, err)
+		require.Equal(t, account1.Balance, account1After.Balance)
 
-		transfer := <-resultsChan
-		require.NotEmpty(t, transfer)
-		require.Equal(t, amount, transfer.Amount)
-		require.Equal(t, account1.ID, transfer.FromAccountID)
-		require.Equal(t, account2.ID, transfer.ToAccountID)
-		require.NotZero(t, transfer.CreatedAt)
-		require.NotZero(t, transfer.ID)
-
-		var result models.Transfer
-		result, err = services.GetTransfer(transfer.ID)
+		account2After, err := services.GetAccount(account2.ID)
+		require.NotEmpty(t, account2)
 		require.NoError(t, err)
+		require.Equal(t, account2.Balance, account2After.Balance)
+	})
+	t.Run("Non Existing Src Account", func(t *testing.T) {
 
-		var fromEntry models.Entry
-		fromEntry, err = services.GetEntry(result.OutgoingEntryID)
-		require.NoError(t, err)
-		require.NotEmpty(t, fromEntry)
-		require.Equal(t, account1.ID, fromEntry.AccountID)
-		require.Equal(t, amount, -fromEntry.Amount)
-		require.NotZero(t, fromEntry.ID)
-		require.NotZero(t, fromEntry.CreatedAt)
+	})
+	t.Run("Invalid Src Account Owner", func(t *testing.T) {
 
-		var toEntry models.Entry
-		toEntry, err = services.GetEntry(result.IncomingEntryID)
-		require.NoError(t, err)
-		require.NotEmpty(t, toEntry)
-		require.Equal(t, account2.ID, toEntry.AccountID)
-		require.Equal(t, amount, toEntry.Amount)
-		require.NotZero(t, toEntry.ID)
-		require.NotZero(t, toEntry.CreatedAt)
-
-		fromAccount, err := services.GetAccount(account1.ID)
-		require.Equal(t, account1.ID, fromAccount.ID)
-		require.NoError(t, err)
-
-		toAccount, err := services.GetAccount(account2.ID)
-		require.Equal(t, account2.ID, toAccount.ID)
-		require.NoError(t, err)
-
-		var diff1 = int32(account1.Balance - fromAccount.Balance)
-		var diff2 = int32(toAccount.Balance - account2.Balance)
-
-		require.True(t, diff2 > 0)
-		require.True(t, diff1 > 0)
-		require.Equal(t, diff1, diff2)
-		require.Equal(t, amount, diff1/int32(i+1))
-	}
+	})
 }
 
-func TestTransferDeadLock(t *testing.T) {
-	user1 := createRandomUser(t)
-	user2 := createRandomUser(t)
-	account1 := createAccount(t, user1.Username)
-	account2 := createAccount(t, user2.Username)
+func TestDepositMoney(t *testing.T) {
+	t.Run("OK", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
 
-	concurrentTransactions := 20
-	var amount int32 = 10
+		req := DepositRequest{
+			Owner:     user.Username,
+			AccountID: account.ID,
+			Amount:    200,
+		}
 
-	errorsChan := make(chan error)
-	resultsChan := make(chan models.Transfer)
+		start := time.Now()
 
-	for i := 0; i < concurrentTransactions; i++ {
-		reverse := i%2 == 0
-		go func(chan models.Transfer, chan error, bool) {
-			srcOwner := account1.Owner
-			fromAccountID, toAccountID := account1.ID, account2.ID
-			if reverse {
-				fromAccountID, toAccountID = toAccountID, fromAccountID
-				srcOwner = account2.Owner
-			}
-			transferRequest := TransferRequest{
-				Owner:         srcOwner,
-				Amount:        amount,
-				FromAccountID: fromAccountID,
-				ToAccountID:   toAccountID,
-			}
-			transfer, err := services.Transfer(transferRequest)
-			errorsChan <- err
-			resultsChan <- transfer
-		}(resultsChan, errorsChan, reverse)
-	}
-
-	for i := 0; i < concurrentTransactions; i++ {
-		err := <-errorsChan
+		res, err := services.DepositMoney(req)
 		require.NoError(t, err)
+		require.NotEmpty(t, res)
 
-		transfer := <-resultsChan
-		require.NotEmpty(t, transfer)
+		require.Equal(t, req.AccountID, res.AccountID)
+		require.Equal(t, req.Amount, res.Amount)
+		require.WithinDuration(t, start, res.CreatedAt, time.Second)
+		require.Zero(t, res.DeletedAt)
 
-		var result models.Transfer
-		result, err = services.GetTransfer(transfer.ID)
+		account, err = services.GetAccount(req.AccountID)
 		require.NoError(t, err)
-		require.NotEmpty(t, result)
+		require.NotEmpty(t, account)
 
-		var fromEntry models.Entry
-		fromEntry, err = services.GetEntry(result.OutgoingEntryID)
-		require.NoError(t, err)
-		require.NotEmpty(t, fromEntry)
+		require.Equal(t, int64(req.Amount), account.Balance)
+	})
+	t.Run("Invalid Owner", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
 
-		var toEntry models.Entry
-		toEntry, err = services.GetEntry(result.IncomingEntryID)
-		require.NoError(t, err)
-		require.NotEmpty(t, toEntry)
+		req := DepositRequest{
+			Owner:     "invalid owner",
+			AccountID: account.ID,
+			Amount:    200,
+		}
 
-		fromAccount, err := services.GetAccount(result.FromAccountID)
-		require.NotEmpty(t, fromAccount)
-		require.NoError(t, err)
-
-		toAccount, err := services.GetAccount(result.ToAccountID)
-		require.NotEmpty(t, toAccount)
-		require.NoError(t, err)
-	}
-
-	account1After, err := services.GetAccount(account1.ID)
-	require.NotEmpty(t, account1)
-	require.NoError(t, err)
-	require.Equal(t, account1.Balance, account1After.Balance)
-
-	account2After, err := services.GetAccount(account2.ID)
-	require.NotEmpty(t, account2)
-	require.NoError(t, err)
-	require.Equal(t, account2.Balance, account2After.Balance)
-
+		res, err := services.DepositMoney(req)
+		require.Error(t, err)
+		require.ErrorIs(t, ErrUnAuthorizedDeposit, err)
+		require.Empty(t, res)
+	})
 }
 
 func createRandomUser(t *testing.T) models.User {
