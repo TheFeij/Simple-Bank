@@ -115,7 +115,7 @@ func (services *SQLServices) WithdrawMoney(req WithdrawRequest) (models.Entry, e
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return ErrSrcAccountNotFound
+				return ErrAccountNotFound
 			}
 			return nil
 		}
