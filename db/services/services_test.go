@@ -128,8 +128,8 @@ func TestGetAccountsList(t *testing.T) {
 			PageNumber: 5,
 		})
 		require.Empty(t, accounts)
-		require.Error(t, err)
-		require.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+		require.NoError(t, err)
+		require.Equal(t, 0, len(accounts))
 	})
 }
 
