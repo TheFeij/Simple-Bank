@@ -41,7 +41,7 @@ func (server *GrpcServer) Transfer(context context.Context, req *pb.TransferRequ
 		case errors.Is(err, services.ErrNotEnoughMoney):
 			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 		default:
-			return nil, status.Errorf(codes.Internal, "something went wrong")
+			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 	}
 
