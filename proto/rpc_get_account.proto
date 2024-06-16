@@ -8,6 +8,7 @@ import "account.proto";
 
 // represents a rpc request to get an account by id
 message GetAccountRequest {
+  // id of the account to be retrieved
   uint64 id = 1;
 }
 
