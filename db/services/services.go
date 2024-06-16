@@ -229,12 +229,6 @@ func (services *SQLServices) Transfer(req TransferRequest) (models.Transfer, err
 }
 
 // ListAccounts retrieves a list of accounts owned by a specified user with pagination.
-//
-// It takes a ListAccountsRequest containing information about the owner, page number, and page size.
-// It returns a slice of models.Account representing the accounts retrieved from the database, along with an error if any.
-//
-// If no accounts are found for the specified owner or an error occurs during the database operation,
-// it returns an empty slice of models.Account and the corresponding error.
 func (services *SQLServices) ListAccounts(req ListAccountsRequest) ([]models.Account, error) {
 	var accountsList []models.Account
 
@@ -246,9 +240,6 @@ func (services *SQLServices) ListAccounts(req ListAccountsRequest) ([]models.Acc
 
 	if err := res.Error; err != nil {
 		return []models.Account{}, err
-	}
-	if res.RowsAffected == 0 {
-		return []models.Account{}, gorm.ErrRecordNotFound
 	}
 
 	return accountsList, nil
