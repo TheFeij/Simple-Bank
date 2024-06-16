@@ -114,6 +114,9 @@ func (services *SQLServices) WithdrawMoney(req WithdrawRequest) (models.Entry, e
 
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrAccountNotFound
+			}
 			return nil
 		}
 
@@ -126,6 +129,10 @@ func (services *SQLServices) WithdrawMoney(req WithdrawRequest) (models.Entry, e
 		}
 
 		account.Balance -= int64(req.Amount)
+		if account.Balance < 0 {
+			return ErrNotEnoughMoney
+		}
+
 		if err := tx.Save(account).Error; err != nil {
 			return err
 		}
