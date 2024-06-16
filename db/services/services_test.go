@@ -86,7 +86,7 @@ func TestDeleteAccount(t *testing.T) {
 	t.Run("AccountNotFound", func(t *testing.T) {
 		response, err := services.DeleteAccount(util.RandomID())
 		require.Error(t, err)
-		require.ErrorIs(t, err, ErrAccountNotFound)
+		require.ErrorIs(t, err, ErrSrcAccountNotFound)
 		require.Empty(t, response)
 	})
 }
@@ -349,7 +349,7 @@ func TestDepositMoney(t *testing.T) {
 
 		res, err := services.DepositMoney(req)
 		require.Error(t, err)
-		require.ErrorIs(t, ErrAccountNotFound, err)
+		require.ErrorIs(t, ErrSrcAccountNotFound, err)
 		require.Empty(t, res)
 	})
 }
@@ -415,7 +415,7 @@ func TestWithdrawMoney(t *testing.T) {
 
 		res, err := services.WithdrawMoney(req)
 		require.Error(t, err)
-		require.ErrorIs(t, ErrAccountNotFound, err)
+		require.ErrorIs(t, ErrSrcAccountNotFound, err)
 		require.Empty(t, res)
 	})
 	t.Run("Not Enough Money", func(t *testing.T) {
