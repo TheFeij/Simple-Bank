@@ -438,7 +438,7 @@ func TestDepositMoney(t *testing.T) {
 
 		res, err := services.DepositMoney(req)
 		require.Error(t, err)
-		require.ErrorIs(t, ErrSrcAccountNotFound, err)
+		require.ErrorIs(t, ErrAccountNotFound, err)
 		require.Empty(t, res)
 	})
 }
