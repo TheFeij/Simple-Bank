@@ -144,6 +144,16 @@ func TestTransfer(t *testing.T) {
 		concurrentTransactions := 20
 		var amount int32 = 10
 
+		srcInitialBalance := int32(concurrentTransactions) * amount
+
+		// first deposit the amount of money to the src account before transferring
+		_, err := services.DepositMoney(DepositRequest{
+			Owner:     user1.Username,
+			AccountID: account1.ID,
+			Amount:    srcInitialBalance,
+		})
+		require.NoError(t, err)
+
 		errorsChan := make(chan error)
 		resultsChan := make(chan models.Transfer)
 
@@ -204,13 +214,8 @@ func TestTransfer(t *testing.T) {
 			require.Equal(t, account2.ID, toAccount.ID)
 			require.NoError(t, err)
 
-			var diff1 = int32(account1.Balance - fromAccount.Balance)
-			var diff2 = int32(toAccount.Balance - account2.Balance)
-
-			require.True(t, diff2 > 0)
-			require.True(t, diff1 > 0)
-			require.Equal(t, diff1, diff2)
-			require.Equal(t, amount, diff1/int32(i+1))
+			require.True(t, int64((i+1)*int(amount)) <= toAccount.Balance)
+			require.True(t, int64(int(srcInitialBalance)-(i+1)*int(amount)) >= fromAccount.Balance)
 		}
 	})
 	t.Run("Concurrent Transfers From 1 to 2 and Reverse", func(t *testing.T) {
@@ -221,6 +226,23 @@ func TestTransfer(t *testing.T) {
 
 		concurrentTransactions := 20
 		var amount int32 = 10
+
+		initialBalance := int32(concurrentTransactions/2) * amount
+
+		// first deposit the amount of money to the src and dst account before transferring
+		_, err := services.DepositMoney(DepositRequest{
+			Owner:     user1.Username,
+			AccountID: account1.ID,
+			Amount:    initialBalance,
+		})
+		require.NoError(t, err)
+
+		_, err = services.DepositMoney(DepositRequest{
+			Owner:     user2.Username,
+			AccountID: account2.ID,
+			Amount:    initialBalance,
+		})
+		require.NoError(t, err)
 
 		errorsChan := make(chan error)
 		resultsChan := make(chan models.Transfer)
@@ -280,18 +302,85 @@ func TestTransfer(t *testing.T) {
 		account1After, err := services.GetAccount(account1.ID)
 		require.NotEmpty(t, account1)
 		require.NoError(t, err)
-		require.Equal(t, account1.Balance, account1After.Balance)
+		require.Equal(t, int64(initialBalance), account1After.Balance)
 
 		account2After, err := services.GetAccount(account2.ID)
 		require.NotEmpty(t, account2)
 		require.NoError(t, err)
-		require.Equal(t, account2.Balance, account2After.Balance)
+		require.Equal(t, int64(initialBalance), account2After.Balance)
 	})
-	t.Run("Non Existing Src Account", func(t *testing.T) {
+	t.Run("Source Account Not Found", func(t *testing.T) {
+		user1 := createRandomUser(t)
+		user2 := createRandomUser(t)
 
+		account2 := createAccount(t, user2.Username)
+
+		req := TransferRequest{
+			Owner:         user1.Username,
+			FromAccountID: util.RandomID(),
+			ToAccountID:   account2.ID,
+			Amount:        200,
+		}
+
+		res, err := services.Transfer(req)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrSrcAccountNotFound)
+		require.Empty(t, res)
 	})
-	t.Run("Invalid Src Account Owner", func(t *testing.T) {
+	t.Run("Destination Account Not Found", func(t *testing.T) {
+		user1 := createRandomUser(t)
 
+		account1 := createAccount(t, user1.Username)
+
+		req := TransferRequest{
+			Owner:         user1.Username,
+			FromAccountID: account1.ID,
+			ToAccountID:   util.RandomID(),
+			Amount:        200,
+		}
+
+		res, err := services.Transfer(req)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrDstAccountNotFound)
+		require.Empty(t, res)
+	})
+	t.Run("UnAuthorized Owner", func(t *testing.T) {
+		user1 := createRandomUser(t)
+		user2 := createRandomUser(t)
+
+		account2 := createAccount(t, user2.Username)
+		account1 := createAccount(t, user1.Username)
+
+		req := TransferRequest{
+			Owner:         util.RandomUsername(),
+			FromAccountID: account1.ID,
+			ToAccountID:   account2.ID,
+			Amount:        200,
+		}
+
+		res, err := services.Transfer(req)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrUnAuthorizedTransfer)
+		require.Empty(t, res)
+	})
+	t.Run("Not Enough Money", func(t *testing.T) {
+		user1 := createRandomUser(t)
+		user2 := createRandomUser(t)
+
+		account2 := createAccount(t, user2.Username)
+		account1 := createAccount(t, user1.Username)
+
+		req := TransferRequest{
+			Owner:         user1.Username,
+			FromAccountID: account1.ID,
+			ToAccountID:   account2.ID,
+			Amount:        200,
+		}
+
+		res, err := services.Transfer(req)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrNotEnoughMoney)
+		require.Empty(t, res)
 	})
 }
 
