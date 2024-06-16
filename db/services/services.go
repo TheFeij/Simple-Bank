@@ -51,7 +51,7 @@ func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 
 		if err := services.DB.Unscoped().First(&deletedAccount, id).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				err = ErrSrcAccountNotFound
+				err = ErrAccountNotFound
 			}
 			return err
 		}
