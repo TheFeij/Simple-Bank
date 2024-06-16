@@ -338,6 +338,20 @@ func TestDepositMoney(t *testing.T) {
 		require.ErrorIs(t, ErrUnAuthorizedDeposit, err)
 		require.Empty(t, res)
 	})
+	t.Run("Account Not Found", func(t *testing.T) {
+		user := createRandomUser(t)
+
+		req := DepositRequest{
+			Owner:     user.Username,
+			AccountID: util.RandomID(),
+			Amount:    200,
+		}
+
+		res, err := services.DepositMoney(req)
+		require.Error(t, err)
+		require.ErrorIs(t, ErrAccountNotFound, err)
+		require.Empty(t, res)
+	})
 }
 
 func createRandomUser(t *testing.T) models.User {
