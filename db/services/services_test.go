@@ -354,6 +354,87 @@ func TestDepositMoney(t *testing.T) {
 	})
 }
 
+func TestWithdrawMoney(t *testing.T) {
+	t.Run("OK", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
+
+		res, err := services.DepositMoney(DepositRequest{
+			Owner:     user.Username,
+			AccountID: account.ID,
+			Amount:    200,
+		})
+		require.NoError(t, err)
+
+		req := WithdrawRequest{
+			Owner:     user.Username,
+			AccountID: account.ID,
+			Amount:    200,
+		}
+
+		start := time.Now()
+
+		res, err = services.WithdrawMoney(req)
+		require.NoError(t, err)
+		require.NotEmpty(t, res)
+
+		require.Equal(t, req.AccountID, res.AccountID)
+		require.Equal(t, -req.Amount, res.Amount)
+		require.WithinDuration(t, start, res.CreatedAt, time.Second)
+		require.Zero(t, res.DeletedAt)
+
+		account, err = services.GetAccount(req.AccountID)
+		require.NoError(t, err)
+		require.NotEmpty(t, account)
+
+		require.Equal(t, int64(0), account.Balance)
+	})
+	t.Run("Invalid Owner", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
+
+		req := WithdrawRequest{
+			Owner:     "invalid owner",
+			AccountID: account.ID,
+			Amount:    200,
+		}
+
+		res, err := services.WithdrawMoney(req)
+		require.Error(t, err)
+		require.ErrorIs(t, ErrUnAuthorizedWithdraw, err)
+		require.Empty(t, res)
+	})
+	t.Run("Account Not Found", func(t *testing.T) {
+		user := createRandomUser(t)
+
+		req := WithdrawRequest{
+			Owner:     user.Username,
+			AccountID: util.RandomID(),
+			Amount:    200,
+		}
+
+		res, err := services.WithdrawMoney(req)
+		require.Error(t, err)
+		require.ErrorIs(t, ErrAccountNotFound, err)
+		require.Empty(t, res)
+	})
+	t.Run("Not Enough Money", func(t *testing.T) {
+		user := createRandomUser(t)
+		account := createAccount(t, user.Username)
+
+		req := WithdrawRequest{
+			Owner:     user.Username,
+			AccountID: account.ID,
+			Amount:    200,
+		}
+
+		res, err := services.WithdrawMoney(req)
+		require.Error(t, err)
+		require.ErrorIs(t, ErrNotEnoughMoney, err)
+		require.Empty(t, res)
+	})
+}
+
 func createRandomUser(t *testing.T) models.User {
 	createUserRequest := requests.CreateUserRequest{
 		Username: util.RandomUsername(),
