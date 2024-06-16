@@ -6,13 +6,19 @@ import "user.proto";
 
 option go_package = "Simple-Bank/pb";
 
+// request message to create a new user
 message CreateUserRequest {
+  // username of the new user
   string username = 1;
+  // full name of the new user
   string fullname = 2;
+  // password of the new user
   string password = 3;
+  // email of the new user
   string email = 4;
 }
 
+// response message to create user request
 message CreateUserResponse {
   User user = 1;
 }
