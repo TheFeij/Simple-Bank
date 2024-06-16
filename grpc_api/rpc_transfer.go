@@ -4,6 +4,7 @@ import (
 	"Simple-Bank/db/services"
 	"Simple-Bank/pb"
 	"context"
+	"errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -32,8 +33,16 @@ func (server *GrpcServer) Transfer(context context.Context, req *pb.TransferRequ
 		Amount:        req.Amount,
 	})
 	if err != nil {
-		// TODO: better error handling required, to be implemented
-		return nil, status.Errorf(codes.Internal, "internal server error")
+		switch {
+		case errors.Is(err, services.ErrSrcAccountNotFound), errors.Is(err, services.ErrDstAccountNotFound):
+			return nil, status.Errorf(codes.NotFound, err.Error())
+		case errors.Is(err, services.ErrUnAuthorizedTransfer):
+			return nil, status.Errorf(codes.Unauthenticated, err.Error())
+		case errors.Is(err, services.ErrNotEnoughMoney):
+			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		default:
+			return nil, status.Errorf(codes.Internal, "something went wrong")
+		}
 	}
 
 	// return the successful transfer response
