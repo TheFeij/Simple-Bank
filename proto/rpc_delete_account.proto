@@ -6,10 +6,12 @@ option go_package = "Simple-Bank/pb";
 
 import "account.proto";
 
+// request message to delete account
 message DeleteAccountRequest {
   int64 id = 1;
 }
 
+// response message to delete account request
 message DeleteAccountResponse {
   Account account = 1;
 }
