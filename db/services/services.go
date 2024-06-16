@@ -22,6 +22,7 @@ func NewSQLServices(db *gorm.DB) Services {
 	}
 }
 
+// CreateAccount creates a new account for the specified owner
 func (services *SQLServices) CreateAccount(owner string) (models.Account, error) {
 	newAccount := models.Account{
 		Owner:     owner,
