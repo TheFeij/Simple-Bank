@@ -6,6 +6,7 @@ option go_package = "Simple-Bank/pb";
 
 import "account.proto";
 
+// request message to create an account
 message CreateAccountResponse {
   Account account = 1;
 }
