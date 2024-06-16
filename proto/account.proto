@@ -6,12 +6,18 @@ option go_package = "Simple-Bank/pb";
 
 import "google/protobuf/timestamp.proto";
 
-// represents a bank account
+// Represents a bank account.
 message Account {
+  // Unique identifier for the account.
   int64 account_id = 1;
+  // Owner of the account.
   string owner = 2;
+  // Balance of the account.
   int64 balance = 3;
+  // Timestamp when the account was created.
   google.protobuf.Timestamp created_at = 4;
+  // Timestamp when the account was last updated.
   google.protobuf.Timestamp updated_at = 5;
+  // Timestamp when the account was deleted.
   google.protobuf.Timestamp deleted_at = 6;
 }
