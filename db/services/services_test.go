@@ -504,7 +504,7 @@ func TestWithdrawMoney(t *testing.T) {
 
 		res, err := services.WithdrawMoney(req)
 		require.Error(t, err)
-		require.ErrorIs(t, ErrSrcAccountNotFound, err)
+		require.ErrorIs(t, ErrAccountNotFound, err)
 		require.Empty(t, res)
 	})
 	t.Run("Not Enough Money", func(t *testing.T) {
