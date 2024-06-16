@@ -3,6 +3,7 @@ package grpc_api
 import (
 	"Simple-Bank/pb"
 	"Simple-Bank/util"
+	"errors"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 )
 
@@ -55,6 +56,28 @@ func validateUpdateUserRequest(req *pb.UpdateUserRequest) (violations []*errdeta
 		if err := util.ValidateEmail(req.GetEmail()); err != nil {
 			violations = append(violations, fieldViolation("email", err))
 		}
+	}
+
+	return violations
+}
+
+// validateTransferRequest validates transfer request's params
+func validateTransferRequest(req *pb.TransferRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if req.FromAccountId < 1 {
+		err := errors.New("invalid id, should be equal or higher than 1")
+		violations = append(violations, fieldViolation("from_account_id", err))
+	}
+	if req.ToAccountId < 1 {
+		err := errors.New("invalid id, should be equal or higher than 1")
+		violations = append(violations, fieldViolation("to_account_id", err))
+	}
+	if req.ToAccountId == req.FromAccountId {
+		err := errors.New("cannot transfer money from an account to itself")
+		violations = append(violations, fieldViolation("to_account_id", err))
+	}
+	if req.Amount < 1 {
+		err := errors.New("invalid amount, amount should be a positive integer")
+		violations = append(violations, fieldViolation("amount", err))
 	}
 
 	return violations
