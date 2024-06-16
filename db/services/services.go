@@ -51,7 +51,7 @@ func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 
 		if err := services.DB.Unscoped().First(&deletedAccount, id).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				err = ErrAccountNotFound
+				err = ErrSrcAccountNotFound
 			}
 			return err
 		}
@@ -76,7 +76,7 @@ func (services *SQLServices) DepositMoney(req DepositRequest) (models.Entry, err
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return ErrAccountNotFound
+				return ErrSrcAccountNotFound
 			}
 			return err
 		}
@@ -115,7 +115,7 @@ func (services *SQLServices) WithdrawMoney(req WithdrawRequest) (models.Entry, e
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return ErrAccountNotFound
+				return ErrSrcAccountNotFound
 			}
 			return nil
 		}
