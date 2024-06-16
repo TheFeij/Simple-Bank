@@ -56,7 +56,8 @@ func (services *SQLServices) DeleteAccount(id int64) (models.Account, error) {
 	return deletedAccount, nil
 }
 
-func (services *SQLServices) DepositMoney(req requests.DepositRequest) (models.Entry, error) {
+// DepositMoney deposits the requested amount of money to the account
+func (services *SQLServices) DepositMoney(req DepositRequest) (models.Entry, error) {
 	var newEntry models.Entry
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -65,13 +66,17 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (models.E
 			Amount:    req.Amount,
 		}
 
-		if err := tx.Create(&newEntry).Error; err != nil {
-			return err
-		}
-
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
 			return nil
+		}
+
+		if account.Owner != req.Owner {
+			return fmt.Errorf("cannot deposit money into other users accounts")
+		}
+
+		if err := tx.Create(&newEntry).Error; err != nil {
+			return err
 		}
 
 		account.Balance += int64(req.Amount)
@@ -81,13 +86,14 @@ func (services *SQLServices) DepositMoney(req requests.DepositRequest) (models.E
 
 		return nil
 	}); err != nil {
-		return newEntry, err
+		return models.Entry{}, err
 	}
 
 	return newEntry, nil
 }
 
-func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (models.Entry, error) {
+// WithdrawMoney withdraws the requested amount of money to the account
+func (services *SQLServices) WithdrawMoney(req WithdrawRequest) (models.Entry, error) {
 	var newEntry models.Entry
 
 	if err := services.DB.Transaction(func(tx *gorm.DB) error {
@@ -96,13 +102,17 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (models
 			Amount:    -req.Amount,
 		}
 
-		if err := tx.Create(&newEntry).Error; err != nil {
-			return err
-		}
-
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
 			return nil
+		}
+
+		if account.Owner != req.Owner {
+			return fmt.Errorf("cannot withdraw money from other users acccounts")
+		}
+
+		if err := tx.Create(&newEntry).Error; err != nil {
+			return err
 		}
 
 		account.Balance -= int64(req.Amount)
@@ -112,7 +122,7 @@ func (services *SQLServices) WithdrawMoney(req requests.WithdrawRequest) (models
 
 		return nil
 	}); err != nil {
-		return newEntry, err
+		return models.Entry{}, err
 	}
 
 	return newEntry, nil
@@ -144,6 +154,9 @@ func (services *SQLServices) Transfer(req TransferRequest) (models.Transfer, err
 			return err
 		}
 		srcAccount.Balance -= int64(req.Amount)
+		if srcAccount.Balance < 0 {
+			return fmt.Errorf("src account doesnt have enough money to transfer")
+		}
 		dstAccount.Balance += int64(req.Amount)
 
 		if err := tx.Save(&srcAccount).Error; err != nil {
