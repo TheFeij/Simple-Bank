@@ -75,6 +75,9 @@ func (services *SQLServices) DepositMoney(req DepositRequest) (models.Entry, err
 
 		var account models.Account
 		if err := tx.First(&account, req.AccountID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrAccountNotFound
+			}
 			return err
 		}
 
