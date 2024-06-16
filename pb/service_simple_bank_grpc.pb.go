@@ -27,6 +27,7 @@ const (
 	SimpleBank_UpdateUser_FullMethodName    = "/pb.SimpleBank/UpdateUser"
 	SimpleBank_CreateAccount_FullMethodName = "/pb.SimpleBank/CreateAccount"
 	SimpleBank_GetAccount_FullMethodName    = "/pb.SimpleBank/GetAccount"
+	SimpleBank_DeleteAccount_FullMethodName = "/pb.SimpleBank/DeleteAccount"
 	SimpleBank_ListAccounts_FullMethodName  = "/pb.SimpleBank/ListAccounts"
 	SimpleBank_Transfer_FullMethodName      = "/pb.SimpleBank/Transfer"
 )
@@ -45,6 +46,8 @@ type SimpleBankClient interface {
 	CreateAccount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CreateAccountResponse, error)
 	// RPC to get information of an account
 	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
+	// RPC to deleted an account
+	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	// RPC to get a list of all accounts belonging to a user
 	ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error)
 	// RPC to transfer money
@@ -104,6 +107,15 @@ func (c *simpleBankClient) GetAccount(ctx context.Context, in *GetAccountRequest
 	return out, nil
 }
 
+func (c *simpleBankClient) DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error) {
+	out := new(DeleteAccountResponse)
+	err := c.cc.Invoke(ctx, SimpleBank_DeleteAccount_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *simpleBankClient) ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error) {
 	out := new(ListAccountsResponse)
 	err := c.cc.Invoke(ctx, SimpleBank_ListAccounts_FullMethodName, in, out, opts...)
@@ -136,6 +148,8 @@ type SimpleBankServer interface {
 	CreateAccount(context.Context, *emptypb.Empty) (*CreateAccountResponse, error)
 	// RPC to get information of an account
 	GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error)
+	// RPC to deleted an account
+	DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error)
 	// RPC to get a list of all accounts belonging to a user
 	ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error)
 	// RPC to transfer money
@@ -161,6 +175,9 @@ func (UnimplementedSimpleBankServer) CreateAccount(context.Context, *emptypb.Emp
 }
 func (UnimplementedSimpleBankServer) GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccount not implemented")
+}
+func (UnimplementedSimpleBankServer) DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAccount not implemented")
 }
 func (UnimplementedSimpleBankServer) ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAccounts not implemented")
@@ -271,6 +288,24 @@ func _SimpleBank_GetAccount_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SimpleBank_DeleteAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SimpleBankServer).DeleteAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SimpleBank_DeleteAccount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SimpleBankServer).DeleteAccount(ctx, req.(*DeleteAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SimpleBank_ListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListAccountsRequest)
 	if err := dec(in); err != nil {
@@ -333,6 +368,10 @@ var SimpleBank_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAccount",
 			Handler:    _SimpleBank_GetAccount_Handler,
+		},
+		{
+			MethodName: "DeleteAccount",
+			Handler:    _SimpleBank_DeleteAccount_Handler,
 		},
 		{
 			MethodName: "ListAccounts",

@@ -80,6 +80,40 @@
         ]
       }
     },
+    "/v1/delete_account/{id}": {
+      "get": {
+        "summary": "delete account",
+        "description": "Use this API to delete an account",
+        "operationId": "SimpleBank_DeleteAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDeleteAccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "id of the account to be deleted",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "SimpleBank"
+        ]
+      }
+    },
     "/v1/get_account/{id}": {
       "get": {
         "summary": "get account",
@@ -102,6 +136,7 @@
         "parameters": [
           {
             "name": "id",
+            "description": "id of the account to be retrieved",
             "in": "path",
             "required": true,
             "type": "string",
@@ -135,6 +170,7 @@
         "parameters": [
           {
             "name": "pageId",
+            "description": "page number",
             "in": "query",
             "required": false,
             "type": "string",
@@ -142,6 +178,7 @@
           },
           {
             "name": "pageSize",
+            "description": "size of each page",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -263,29 +300,35 @@
       "properties": {
         "accountId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Unique identifier for the account."
         },
         "owner": {
-          "type": "string"
+          "type": "string",
+          "description": "Owner of the account."
         },
         "balance": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "Balance of the account."
         },
         "createdAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "Timestamp when the account was created."
         },
         "updatedAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "Timestamp when the account was last updated."
         },
         "deletedAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "Timestamp when the account was deleted."
         }
       },
-      "title": "represents a bank account"
+      "description": "Represents a bank account."
     },
     "pbCreateAccountResponse": {
       "type": "object",
@@ -293,24 +336,30 @@
         "account": {
           "$ref": "#/definitions/pbAccount"
         }
-      }
+      },
+      "title": "request message to create an account"
     },
     "pbCreateUserRequest": {
       "type": "object",
       "properties": {
         "username": {
-          "type": "string"
+          "type": "string",
+          "title": "username of the new user"
         },
         "fullname": {
-          "type": "string"
+          "type": "string",
+          "title": "full name of the new user"
         },
         "password": {
-          "type": "string"
+          "type": "string",
+          "title": "password of the new user"
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "title": "email of the new user"
         }
-      }
+      },
+      "title": "request message to create a new user"
     },
     "pbCreateUserResponse": {
       "type": "object",
@@ -318,7 +367,17 @@
         "user": {
           "$ref": "#/definitions/pbUser"
         }
-      }
+      },
+      "title": "response message to create user request"
+    },
+    "pbDeleteAccountResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/pbAccount"
+        }
+      },
+      "title": "response message to delete account request"
     },
     "pbGetAccountResponse": {
       "type": "object",
@@ -351,7 +410,8 @@
         "password": {
           "type": "string"
         }
-      }
+      },
+      "title": "request message to login"
     },
     "pbLoginUserResponse": {
       "type": "object",
@@ -376,22 +436,26 @@
           "type": "string",
           "format": "date-time"
         }
-      }
+      },
+      "title": "response message to a login request"
     },
     "pbTransferRequest": {
       "type": "object",
       "properties": {
         "fromAccountId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "source account"
         },
         "toAccountId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "destination account"
         },
         "amount": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "title": "amount of money to be transferred from from_account_id to to_account_id"
         }
       },
       "title": "represents a transfer request to transfer money from a account to another"

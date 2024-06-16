@@ -20,15 +20,20 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// request message to create a new user
 type CreateUserRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// username of the new user
 	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	// full name of the new user
 	Fullname string `protobuf:"bytes,2,opt,name=fullname,proto3" json:"fullname,omitempty"`
+	// password of the new user
 	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
-	Email    string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	// email of the new user
+	Email string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
 }
 
 func (x *CreateUserRequest) Reset() {
@@ -91,6 +96,7 @@ func (x *CreateUserRequest) GetEmail() string {
 	return ""
 }
 
+// response message to create user request
 type CreateUserResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

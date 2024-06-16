@@ -21,17 +21,23 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// represents a bank account
+// Represents a bank account.
 type Account struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	AccountId int64                  `protobuf:"varint,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Owner     string                 `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
-	Balance   int64                  `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	// Unique identifier for the account.
+	AccountId int64 `protobuf:"varint,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	// Owner of the account.
+	Owner string `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	// Balance of the account.
+	Balance int64 `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	// Timestamp when the account was created.
 	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Timestamp when the account was last updated.
 	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// Timestamp when the account was deleted.
 	DeletedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
 }
 

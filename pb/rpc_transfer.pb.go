@@ -27,9 +27,12 @@ type TransferRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// source account
 	FromAccountId int64 `protobuf:"varint,1,opt,name=from_account_id,json=fromAccountId,proto3" json:"from_account_id,omitempty"`
-	ToAccountId   int64 `protobuf:"varint,2,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
-	Amount        int32 `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	// destination account
+	ToAccountId int64 `protobuf:"varint,2,opt,name=to_account_id,json=toAccountId,proto3" json:"to_account_id,omitempty"`
+	// amount of money to be transferred from from_account_id to to_account_id
+	Amount int32 `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
 }
 
 func (x *TransferRequest) Reset() {

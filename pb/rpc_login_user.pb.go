@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// request message to login
 type LoginUserRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -76,6 +77,7 @@ func (x *LoginUserRequest) GetPassword() string {
 	return ""
 }
 
+// response message to a login request
 type LoginUserResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
